@@ -1,5 +1,5 @@
-* {
-  padding: 0px;
-  margin: 0px;
-  box-sizing: border-box;
+@import "tailwindcss";
+
+body{
+    background-color: #FFF8ED;
 }

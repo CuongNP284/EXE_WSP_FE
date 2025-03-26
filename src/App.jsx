@@ -4,6 +4,7 @@ import LoginSignup from './pages/login/LoginSignup';
 
 //Customer Import
 import AboutUs from './pages/customer/AboutUs';
+import FAQ from './pages/customer/FAQ';
 
 const App = () => {
   return (
@@ -13,6 +14,7 @@ const App = () => {
 
         {/* Customer Routes */}
         <Route path='/aboutus' element={<AboutUs />} />
+        <Route path='/faq' element={<FAQ />} />
       </Routes>
     </BrowserRouter>
   )

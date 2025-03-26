@@ -7,7 +7,7 @@ import CustomeFooter from '../../components/customer/CustomeFooter';
 const FAQ = () => {
   const [openFAQs, setOpenFAQs] = useState({
     create: false,
-    workshoophy: false
+    workshophy: false
   });
 
   const toggleFAQ = (faq) => {
@@ -111,17 +111,17 @@ const FAQ = () => {
                   className="w-full flex justify-between items-center p-6 text-left hover:bg-gray-50 transition"
                 >
                   <span className="text-xl font-semibold text-blue-900">
-                    Workshoophy Là Gì?
+                    Workshophy Là Gì?
                   </span>
                   <motion.div
-                    animate={{ rotate: openFAQs.workshoophy ? 180 : 0 }}
+                    animate={{ rotate: openFAQs.workshophy ? 180 : 0 }}
                     transition={{ duration: 0.3 }}
                   >
                     <ChevronDown className="text-blue-900" />
                   </motion.div>
                 </button>
                 <AnimatePresence>
-                  {openFAQs.workshoophy && (
+                  {openFAQs.workshophy && (
                     <motion.div 
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
@@ -130,7 +130,7 @@ const FAQ = () => {
                       className="overflow-hidden"
                     >
                       <div className="p-6 text-gray-700 border-t">
-                        Workshoophy là một nền tảng được thiết kế để tạo ra những trải nghiệm trực tiếp chuyển biến, kết nối con người trên toàn cầu. Chúng tôi kết hợp công nghệ, sáng tạo và kết nối con người để truyền cảm hứng và biến đổi các tương tác.
+                        Workshophy là một nền tảng được thiết kế để tạo ra những trải nghiệm trực tiếp chuyển biến, kết nối con người trên toàn cầu. Chúng tôi kết hợp công nghệ, sáng tạo và kết nối con người để truyền cảm hứng và biến đổi các tương tác.
                       </div>
                     </motion.div>
                   )}
@@ -160,7 +160,7 @@ const FAQ = () => {
         <div className="bg-transparent py-16 mt-12">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center text-[#091238] mb-12">
-              Quy Định Workshoophy Bạn Không Nên Bỏ Qua
+              Quy Định Workshophy Bạn Không Nên Bỏ Qua
             </h2>
             
             <motion.div 

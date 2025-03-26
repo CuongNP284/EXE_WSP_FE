@@ -1,0 +1,132 @@
+import React from 'react'
+import CustomerHeader from '../../components/customer/CustomerHeader'
+import CustomeFooter from '../../components/customer/CustomeFooter'
+
+// Icons (bạn có thể thay thế các biểu tượng này bằng SVG thực tế hoặc sử dụng thư viện biểu tượng)
+const ConsumerIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+);
+
+const OrganizerIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+    </svg>
+);
+
+const ThirdPartyIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+);
+
+const LegalTerms = () => {
+    const sections = [
+        {
+            icon: <ConsumerIcon />,
+            title: 'Người Dùng',
+            description: 'Duyệt, mua sắm, tương tác với người dùng Workshophy khác và quyền riêng tư của bạn',
+            links: [
+                'Điều Khoản Dịch Vụ',
+                'Chính Sách Bảo Mật',
+                'Tuyên Bố Về Cookie',
+                'Hướng Dẫn Cộng Đồng',
+                'Workshophy Insiders (Beta)',
+                'Câu Hỏi Thường Gặp Về Bảo Vệ Dữ Liệu'
+            ]
+        },
+        {
+            icon: <OrganizerIcon />,
+            title: 'Nhà Tổ Chức',
+            description: 'Tạo tài khoản và sự kiện, xử lý thanh toán, hoàn tiền và quyền riêng tư dữ liệu',
+            links: [
+                'Điều Khoản Dịch Vụ',
+                'Chính Sách Bảo Mật',
+                'Tuyên Bố Về Cookie',
+                'Hướng Dẫn Cộng Đồng',
+                'Thỏa Thuận Nhà Bán Hàng',
+                'Tuyên Bố Về Quyền Con Người',
+                'Yêu Cầu Chính Sách Hoàn Tiền Của Nhà Tổ Chức',
+                'Phụ Lục Xử Lý Dữ Liệu (DPA) Dành Cho Nhà Tổ Chức',
+                'Các Nhà Xử Lý Dữ Liệu Phụ Của Workshophy',
+                'Hướng Dẫn Đánh Giá Thị Trường Ứng Dụng'
+            ]
+        },
+        {
+            icon: <ThirdPartyIcon />,
+            title: 'Bên Thứ Ba',
+            description: 'Nhà phát triển, chủ sở hữu IP, nhà cung cấp Workshophy, bộ xử lý và bộ xử lý phụ',
+            links: [
+                'Điều Khoản Dịch Vụ',
+                'Điều Khoản Sử Dụng API',
+                'Chính Sách Nhãn Hiệu & Bản Quyền',
+                'Phụ Lục Xử Lý Dữ Liệu (DPA) Dành Cho Bộ Xử Lý và Bộ Xử Lý Phụ',
+                'Câu Hỏi Thường Gặp Về Bảo Vệ Dữ Liệu',
+                'Quy Tắc Ứng Xử Của Nhà Cung Cấp'
+            ]
+        }
+    ];
+
+    return (
+        <div>
+            <CustomerHeader />
+            <div className="min-h-screen">
+                {/* Header */}
+                <div className="bg-white shadow-sm">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                        <h1 className="text-3xl font-bold text-gray-900">Điều Khoản Pháp Lý</h1>
+                        <p className="mt-2 text-gray-600">
+                            Chào mừng bạn! Hãy tìm hiểu về các quy định pháp lý khi sử dụng Workshophy.
+                        </p>
+
+                        {/* Top Navigation */}
+                        <div className="mt-4 flex space-x-4">
+                            <a href="/termsofservice" className="px-3 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200">
+                                Điều Khoản Dịch Vụ
+                            </a>
+                            <a href="#" className="px-3 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200">
+                                Hướng Dẫn Cộng Đồng
+                            </a>
+                            <a href="#" className="px-3 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200">
+                                Chính Sách Bảo Mật
+                            </a>
+                            <a href="#" className="px-3 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200">
+                                Tuyên Bố Về Cookie
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Main Content */}
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {sections.map((section, index) => (
+                            <div key={index} className="bg-white shadow-md rounded-lg p-6">
+                                <div className="flex items-center mb-4">
+                                    {section.icon}
+                                    <h2 className="ml-4 text-xl font-semibold text-gray-800">{section.title}</h2>
+                                </div>
+                                <p className="text-gray-600 mb-4">{section.description}</p>
+                                <div className="space-y-2">
+                                    {section.links.map((link, linkIndex) => (
+                                        <a
+                                            key={linkIndex}
+                                            href="#"
+                                            className="block text-blue-600 hover:text-blue-800 hover:underline"
+                                        >
+                                            {link}
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+            <CustomeFooter />
+        </div>
+    )
+}
+
+export default LegalTerms

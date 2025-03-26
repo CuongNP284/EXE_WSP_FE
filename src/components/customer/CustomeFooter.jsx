@@ -6,7 +6,7 @@ const CustomeFooter = () => {
             <div className="container mx-auto grid grid-cols-3 gap-8">
                 {/* Company Info */}
                 <div>
-                    <h2 className="text-xl font-bold text-blue-600 mb-4">Workshophy</h2>
+                    <h2 className="text-xl font-bold text-white mb-4">Workshophy</h2>
                     <p className="text-sm text-white">
                         Hệ thống quản lý và phân phối sự kiện
                         <br />

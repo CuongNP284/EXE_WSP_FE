@@ -5,12 +5,12 @@ const CustomerHeader = () => {
     return (
         <header className="bg-transparent px-4 py-3 flex items-center justify-between">
             <div className="flex items-center space-x-4">
-                <h1 className="text-2xl font-bold text-blue-600">Workshophy</h1>
+                <h1 className="text-2xl font-bold text-[#091238]">Workshophy</h1>
                 <div className="relative flex-grow max-w-md">
                     <input
                         type="text"
                         placeholder="Bạn muốn trải nghiệm workshop gì?"
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#091238]"
                     />
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                 </div>

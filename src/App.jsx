@@ -6,6 +6,7 @@ import LoginSignup from './pages/login/LoginSignup';
 import AboutUs from './pages/customer/AboutUs';
 import LegalTerms from './pages/customer/LegalTerms';
 import TermsOfService from './pages/customer/TermsOfService';
+import FAQ from './pages/customer/FAQ';
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
         <Route path='/aboutus' element={<AboutUs />} />
         <Route path='/legalterms' element={<LegalTerms />} />
         <Route path='/termsofservice' element={<TermsOfService />} />
+        <Route path='/faq' element={<FAQ />} />
       </Routes>
     </BrowserRouter>
   )

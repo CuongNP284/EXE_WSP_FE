@@ -77,7 +77,12 @@ const AboutUs = () => {
                         alt="Workshop Experience"
                         className="absolute inset-0 w-full h-full object-cover blur-xs"
                     />
-                    <div className="relative z-10 text-center px-4">
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.5 }}
+                        className="relative z-10 text-center px-8 py-10 bg-opacity-50 rounded-xl backdrop-blur-2xl shadow-lg max-w-3xl mx-4"
+                    >
                         <motion.h1
                             initial={{ y: 50, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
@@ -94,7 +99,7 @@ const AboutUs = () => {
                         >
                             Chúng tôi tạo ra những trải nghiệm trực tiếp biến đổi, kết nối mọi người trên toàn thế giới
                         </motion.p>
-                    </div>
+                    </motion.div>
                 </div>
 
                 {/* About Us Section */}

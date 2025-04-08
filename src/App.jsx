@@ -1,6 +1,11 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import LoginSignup from './pages/login/LoginSignup';
+
+// Authentication Import
+import LoginUser from './pages/authentication/authenuser/LoginUser';
+import SignupUser from './pages/authentication/authenuser/SignupUser';
+import ResetPasswordPage from './pages/authentication/authenuser/ResetPassword';
+import EmailVerificationPage from './pages/authentication/authenuser/EmailVerify';
 
 //Customer Import
 import AboutUs from './pages/customer/AboutUs';
@@ -12,7 +17,10 @@ const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path='/login' element={<LoginSignup />} />
+        <Route path='/loginuser' element={<LoginUser />} />
+        <Route path='/signupuser' element={<SignupUser />} />
+        <Route path='/resetpassword' element={<ResetPasswordPage />} />
+        <Route path='/emailverify' element={<EmailVerificationPage />} />
 
         {/* Customer Routes */}
         <Route path='/aboutus' element={<AboutUs />} />

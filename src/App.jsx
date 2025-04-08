@@ -12,11 +12,14 @@ import AboutUs from './pages/customer/AboutUs';
 import LegalTerms from './pages/customer/LegalTerms';
 import TermsOfService from './pages/customer/TermsOfService';
 import FAQ from './pages/customer/FAQ';
+import Questions from './pages/authentication/authenuser/Questions';
+
 
 const App = () => {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Customer Authentication */}
         <Route path='/loginuser' element={<LoginUser />} />
         <Route path='/signupuser' element={<SignupUser />} />
         <Route path='/resetpassword' element={<ResetPasswordPage />} />
@@ -27,6 +30,7 @@ const App = () => {
         <Route path='/legalterms' element={<LegalTerms />} />
         <Route path='/termsofservice' element={<TermsOfService />} />
         <Route path='/faq' element={<FAQ />} />
+        <Route path='/questions' element={<Questions />} />
       </Routes>
     </BrowserRouter>
   )

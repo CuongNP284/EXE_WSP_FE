@@ -31,43 +31,7 @@ const Questions = () => {
                 'Sưu tầm (Tem, Thẻ, v.v.)',
                 'Tự làm đồ & Thủ công',
             ],
-        },
-        {
-            id: 'timeSpent',
-            question: 'Bạn thường dành bao nhiêu thời gian cho sở thích mỗi tuần?',
-            type: 'radio',
-            options: [
-                'Dưới 2 giờ',
-                '2–5 giờ',
-                '6–10 giờ',
-                '11–15 giờ',
-                'Trên 15 giờ',
-            ],
-        },
-        {
-            id: 'preferredEnvironment',
-            question: 'Bạn thích thực hiện sở thích ở đâu?',
-            type: 'radio',
-            options: [
-                'Tại nhà',
-                'Ngoài trời, gần thiên nhiên',
-                'Các địa điểm chuyên biệt (studio, phòng gym, v.v.)',
-                'Không gian cộng đồng',
-                'Khi đi du lịch',
-            ],
-        },
-        {
-            id: 'socialPreference',
-            question: 'Bạn thích tham gia sở thích theo cách nào:',
-            type: 'radio',
-            options: [
-                'Một mình / Tự lập',
-                'Cùng người thân hoặc bạn bè thân thiết',
-                'Trong nhóm nhỏ',
-                'Trong cộng đồng lớn',
-                'Linh hoạt tùy hoạt động',
-            ],
-        },
+        },        
     ];
 
     const handleCheckboxChange = (questionId, option) => {
@@ -102,11 +66,9 @@ const Questions = () => {
         }
     };
 
-    const prevQuestion = () => {
-        if (currentStep > 0) {
-            setDirection('backward');
-            setCurrentStep((prev) => prev - 1);
-        }
+    const skipSurvey = () => {
+        setDirection('forward');
+        setCompleted(true);
     };
 
     const isNextDisabled = () => {
@@ -328,13 +290,12 @@ const Questions = () => {
                                             transition={{ delay: 0.4, duration: 0.3 }}
                                         >
                                             <motion.button
-                                                onClick={prevQuestion}
-                                                className={`px-6 py-2 rounded-lg text-gray-600 font-medium ${currentStep === 0 ? 'invisible' : 'hover:bg-gray-100'
-                                                    }`}
+                                                onClick={skipSurvey}
+                                                className="px-6 py-2 rounded-lg text-gray-600 font-medium hover:bg-gray-100"
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}
                                             >
-                                                Quay lại
+                                                Bỏ qua khảo sát
                                             </motion.button>
                                             <motion.button
                                                 onClick={nextQuestion}

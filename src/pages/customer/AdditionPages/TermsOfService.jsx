@@ -1,6 +1,6 @@
 import React from 'react';
-import CustomerHeader from '../../components/customer/CustomerHeader';
-import CustomeFooter from '../../components/customer/CustomeFooter';
+import CustomerHeader from '../../../components/customer/CustomerHeader';
+import CustomeFooter from '../../../components/customer/CustomeFooter';
 
 const TermsOfService = () => {
   const sections = [

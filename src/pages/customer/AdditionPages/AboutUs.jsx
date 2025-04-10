@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import CustomerHeader from '../../components/customer/CustomerHeader'
-import CustomeFooter from '../../components/customer/CustomeFooter'
+import CustomerHeader from '../../../components/customer/CustomerHeader'
+import CustomeFooter from '../../../components/customer/CustomeFooter'
 import { motion } from 'framer-motion';
 
 const AboutUs = () => {

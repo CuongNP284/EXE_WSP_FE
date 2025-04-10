@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronUp, ShieldCheck, FileText, Scale } from 'lucide-react';
-import CustomerHeader from '../../components/customer/CustomerHeader';
-import CustomeFooter from '../../components/customer/CustomeFooter';
+import CustomerHeader from '../../../components/customer/CustomerHeader';
+import CustomeFooter from '../../../components/customer/CustomeFooter';
 
 const FAQ = () => {
   const [openFAQs, setOpenFAQs] = useState({

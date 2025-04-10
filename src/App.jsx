@@ -8,12 +8,16 @@ import ResetPasswordPage from './pages/authentication/authenuser/ResetPassword';
 import EmailVerificationPage from './pages/authentication/authenuser/EmailVerify';
 
 //Customer Import
-import AboutUs from './pages/customer/AboutUs';
-import LegalTerms from './pages/customer/LegalTerms';
-import TermsOfService from './pages/customer/TermsOfService';
-import FAQ from './pages/customer/FAQ';
+import AboutUs from './pages/customer/AdditionPages/AboutUs';
+import LegalTerms from './pages/customer/AdditionPages/LegalTerms';
+import TermsOfService from './pages/customer/AdditionPages/TermsOfService';
+import FAQ from './pages/customer/AdditionPages/FAQ';
 import Questions from './pages/authentication/authenuser/Questions';
-
+import CommunityStd from './pages/customer/AdditionPages/CommunityStd';
+import PrivacyPolicy from './pages/customer/AdditionPages/PrivacyPolicy';
+import CookieStm from './pages/customer/AdditionPages/CookieStm';
+import SellerAgreement from './pages/customer/AdditionPages/SellerAgreement';
+import OrganizerRefundPolicy from './pages/customer/AdditionPages/OrganizerRefundPolicy';
 
 const App = () => {
   return (
@@ -31,6 +35,13 @@ const App = () => {
         <Route path='/termsofservice' element={<TermsOfService />} />
         <Route path='/faq' element={<FAQ />} />
         <Route path='/questions' element={<Questions />} />
+        <Route path='/communitystd' element={<CommunityStd />} />
+        <Route path='/privacypolicy' element={<PrivacyPolicy />} />
+        <Route path='/cookiestm' element={<CookieStm />} />
+        <Route path='/selleragreement' element={<SellerAgreement />} />
+        <Route path='/organizerrefundpolicy' element={<OrganizerRefundPolicy />} />
+
+        {/* Default Route */}
       </Routes>
     </BrowserRouter>
   )

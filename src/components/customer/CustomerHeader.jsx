@@ -5,7 +5,7 @@ const CustomerHeader = () => {
     return (
         <header className="bg-transparent px-4 py-3 flex items-center justify-between">
             <div className="flex items-center space-x-4">
-                <h1 className="text-2xl font-bold text-[#091238]">Workshophy</h1>
+                <a href="/"><h1 className="text-2xl font-bold text-[#091238]">Workshophy</h1></a>
                 <div className="relative flex-grow max-w-md">
                     <input
                         type="text"
@@ -16,8 +16,7 @@ const CustomerHeader = () => {
                 </div>
             </div>
             <div className="flex items-center space-x-4">
-                <a href="#" className="text-gray-600 hover:text-blue-600">Blog</a>
-                <a href="#" className="text-gray-600 hover:text-blue-600">Tạo workshop</a>
+                <a href="/bloguser" className="text-gray-600 hover:text-blue-600">Blog</a>
                 <a href="#" className="text-gray-600 hover:text-blue-600">Vé của bạn</a>
                 <User className="text-gray-600" size={24} />
             </div>

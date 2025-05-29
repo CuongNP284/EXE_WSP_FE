@@ -2,51 +2,78 @@ import React from 'react'
 
 const CustomeFooter = () => {
     return (
-        <footer className="bg-[#091238] px-4 py-6">
-            <div className="container mx-auto grid grid-cols-3 gap-8">
-                {/* Company Info */}
-                <div>
-                    <h2 className="text-xl font-bold text-white mb-4">Workshophy</h2>
-                    <p className="text-sm text-white">
-                        Hệ thống quản lý và phân phối sự kiện
-                        <br />
-                        Workshophy Co. © 2025
-                    </p>
-                    <div className="mt-4 text-sm text-white">
-                        <p>Hotline: 1900.2025</p>
-                        <p>Email: support@workshophy.vn</p>
+        <footer className="bg-[#091238] px-4 py-8">
+            <div className="container mx-auto">
+                {/* Main Footer Content */}
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-8">
+                    {/* Company Info - Keep original */}
+                    <div className="col-span-1">
+                        <h2 className="text-xl font-bold text-white mb-4">Workshophy</h2>
+                        <p className="text-sm text-white mb-4">
+                            Hệ thống quản lý và phân phối sự kiện
+                            <br />
+                            Workshophy Co. © 2025
+                        </p>
+                        <div className="text-sm text-white mb-4">
+                            <p>Hotline: 1900.2025</p>
+                            <p>Email: support@workshophy.vn</p>
+                        </div>
+                    </div>
+
+                    {/* Sử dụng Workshophy */}
+                    <div>
+                        <h3 className="font-semibold mb-4 text-white">Về Workshophy</h3>
+                        <ul className="space-y-2 text-sm text-white">
+                            <li><a href="#" className="hover:text-gray-300">Về chúng tôi</a></li>
+                            <li><a href="#" className="hover:text-gray-300">Blog</a></li>
+                            <li><a href="#" className="hover:text-gray-300">Hướng dẫn Cộng đồng</a></li>
+                            <li><a href="#" className="hover:text-gray-300">FAQ</a></li>
+                        </ul>
+                    </div>
+
+                    {/* Lên kế hoạch Workshop */}
+                    <div>
+                        <h4 className="text-sm font-medium text-white mb-2">Dành cho Nhà Tổ Chức</h4>
+                        <ul className="space-y-2 text-sm text-white">
+                            <li><a href="#" className="hover:text-gray-300">Điều Khoản Dịch Vụ</a></li>
+                            <li><a href="#" className="hover:text-gray-300">Chính Sách Bảo Mật</a></li>
+                            <li><a href="#" className="hover:text-gray-300">Tuyên Bố Về Cookie</a></li>
+                            <li><a href="#" className="hover:text-gray-300">Hướng Dẫn Cộng Đồng</a></li>
+                            <li><a href="#" className="hover:text-gray-300">Thỏa Thuận Nhà Bán Hàng</a></li>
+                            <li><a href="#" className="hover:text-gray-300">Yêu Cầu Chính Sách Hoàn Tiền Của Nhà Tổ Chức</a></li>
+                        </ul>
+                    </div>
+
+                    {/* Chính sách & Hỗ trợ */}
+                    <div>
+                        <h3 className="font-semibold mb-4 text-white">Chính sách & Hỗ trợ</h3>
+                        <div className="mb-4">
+                            <h4 className="text-sm font-medium text-white mb-2">Dành cho Khách hàng</h4>
+                            <ul className="space-y-1 text-xs text-white">
+                                <li><a href="#" className="hover:text-gray-300">Điều Khoản Dịch Vụ</a></li>
+                                <li><a href="#" className="hover:text-gray-300">Chính Sách Bảo Mật</a></li>
+                                <li><a href="#" className="hover:text-gray-300">Tuyên Bố Về Cookie</a></li>
+                                <li><a href="#" className="hover:text-gray-300">Hướng Dẫn Cộng Đồng</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 className="text-sm font-medium text-white mb-2">Dành cho Người Tổ chức</h4>
+                            <ul className="space-y-1 text-xs text-white">
+                                <li><a href="#" className="hover:text-gray-300">Điều Khoản Dịch Vụ</a></li>
+                                <li><a href="#" className="hover:text-gray-300">Chính Sách Bảo Mật</a></li>
+                                <li><a href="#" className="hover:text-gray-300">Tuyên Bố Về Cookie</a></li>
+                                <li><a href="#" className="hover:text-gray-300">Hướng Dẫn Cộng Đồng</a></li>
+                                <li><a href="#" className="hover:text-gray-300">Thỏa Thuận Nhà Bán Hàng</a></li>
+                                <li><a href="#" className="hover:text-gray-300">Yêu Cầu Chính Sách Hoàn Tiền Của Nhà Tổ Chức</a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
-                {/* Customer Services */}
-                <div>
-                    <h3 className="font-semibold mb-4 text-white">Dành cho Khách hàng</h3>
-                    <ul className="space-y-2 text-sm text-white">
-                        <li>Điều khoản sử dụng cho khách hàng</li>
-                        <li>Bảo mật thông tin</li>
-                        <li>Quy chế hoạt động</li>
-                    </ul>
+                {/* Business Registration - Keep original */}
+                <div className="pt-4 border-t border-gray-600 text-xs text-white text-center">
+                    &copy; 2025 Workshophy Co. All rights reserved. <br />
                 </div>
-
-                {/* Organization Services */}
-                <div>
-                    <h3 className="font-semibold mb-4 text-white">Dành cho Người Tổ chức</h3>
-                    <ul className="space-y-2 text-sm text-white">
-                        <li>Điều khoản sử dụng cho người tổ chức</li>
-                        <li>Chính sách quyết toán chi phí</li>
-                        <li>Chính sách hoàn tiền</li>
-                        <li>Phương thức thanh toán</li>
-                    </ul>
-                </div>
-            </div>
-
-            {/* Business Registration */}
-            <div className="mt-6 pt-4 border-t border-gray-200 text-xs text-white text-center">
-                GCNĐKKD: [Số đăng ký kinh doanh]
-                <br />
-                Số kế hoạch và Đầu tư TP. Hồ Chí Minh
-                <br />
-                Cấp lần đầu ngày: DD/MM/YYYY
             </div>
         </footer>
     )

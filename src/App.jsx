@@ -8,6 +8,9 @@ import ResetPasswordPage from './pages/authentication/authenuser/ResetPassword';
 import EmailVerificationPage from './pages/authentication/authenuser/EmailVerify';
 
 //Customer Import
+import Homepage from './pages/customer/MainPages/Homepage';
+import BlogUser from './pages/customer/MainPages/BlogUser';
+
 import AboutUs from './pages/customer/AdditionPages/AboutUs';
 import LegalTerms from './pages/customer/AdditionPages/LegalTerms';
 import TermsOfService from './pages/customer/AdditionPages/TermsOfService';
@@ -48,6 +51,9 @@ const App = () => {
         <Route path='/emailverify' element={<EmailVerificationPage />} />
 
         {/* Customer Routes */}
+        <Route path='/' element={<Homepage />} />
+        <Route path='/bloguser' element={<BlogUser />} />
+
         <Route path='/aboutus' element={<AboutUs />} />
         <Route path='/legalterms' element={<LegalTerms />} />
         <Route path='/termsofservice' element={<TermsOfService />} />

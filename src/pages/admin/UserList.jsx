@@ -1,88 +1,108 @@
-import React, { useState } from 'react'
-import { Table, Button, Tag, Avatar, Space, Input, Select, Popconfirm, message } from 'antd'
-import { UserOutlined, SearchOutlined } from '@ant-design/icons'
-import AdminSidebar from '../../components/admin/AdminSidebar'
-import AdminHeader from '../../components/admin/AdminHeader'
+import React, { useState, useEffect } from 'react';
+import { Table, Button, Tag, Avatar, Space, Input, Select, message } from 'antd';
+import Swal from 'sweetalert2';
+import { UserOutlined, SearchOutlined } from '@ant-design/icons';
+import AdminSidebar from '../../components/admin/AdminSidebar';
+import AdminHeader from '../../components/admin/AdminHeader';
+import ApiService from '../../service/ApiService';
 
 const UserList = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
-    const [users, setUsers] = useState([
-        {
-            id: 1,
-            name: 'Nguyễn Văn A',
-            email: 'nguyenvana@email.com',
-            joinDate: '2024-01-15',
-            status: 'active',
-            role: 'user'
-        },
-        {
-            id: 2,
-            name: 'Trần Thị B',
-            email: 'tranthib@email.com',
-            joinDate: '2024-02-20',
-            status: 'banned',
-            role: 'user'
-        },
-        {
-            id: 3,
-            name: 'Lê Văn C',
-            email: 'levanc@email.com',
-            joinDate: '2024-03-10',
-            status: 'active',
-            role: 'moderator'
-        },
-        {
-            id: 4,
-            name: 'Phạm Thị D',
-            email: 'phamthid@email.com',
-            joinDate: '2024-04-05',
-            status: 'active',
-            role: 'user'
-        },
-        {
-            id: 5,
-            name: 'Hoàng Văn E',
-            email: 'hoangvane@email.com',
-            joinDate: '2024-05-01',
-            status: 'banned',
-            role: 'user'
-        }
-    ]);
-
+    const [users, setUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
     const itemsPerPage = 5;
+
+    useEffect(() => {
+        fetchUsers();
+    }, [currentPage]);
+
+    const fetchUsers = async () => {
+        try {
+            const params = {
+                pageSize: itemsPerPage,
+                page: currentPage,
+                includeDeleted: false,
+            };
+            const response = await ApiService.getAllUsers(params);
+            if (response.status === 200) {
+                const items = response.data.data?.items || response.data.items || [];
+                const total = response.data.data?.count || response.data.totalItems || 0;
+
+                // Filter out admin users (role === 0)
+                const filteredItems = items.filter(user => user.role !== 0);
+
+                const formattedUsers = filteredItems.map(user => ({
+                    id: user.id || '',
+                    firstName: user.firstName || '',
+                    lastName: user.lastName || '',
+                    email: user.email || 'No Email',
+                    phoneNumber: user.phoneNumber || 'Chưa có',
+                    achievementPoint: user.achievementPoint ?? 0,
+                    status: user.status === 1 ? 'active' : 'banned',
+                    role: ApiService.mapRoleIdToName(user.role || 2).toLowerCase(),
+                }));
+
+                setUsers(formattedUsers);
+                setTotalItems(total);
+            } else {
+                message.error(response.message || 'Không thể tải danh sách người dùng.');
+            }
+        } catch (error) {
+            message.error('Đã xảy ra lỗi khi tải danh sách người dùng.');
+            console.error('Fetch Users Error:', error);
+        }
+    };
 
     const toggleSidebar = () => {
         setSidebarOpen(!sidebarOpen);
     };
 
-    const handleBanUnban = (userId, userName, currentStatus) => {
-        const action = currentStatus === 'active' ? 'cấm' : 'bỏ cấm';
-        setUsers(users.map(user => 
-            user.id === userId 
-                ? { ...user, status: user.status === 'active' ? 'banned' : 'active' }
-                : user
-        ));
-        message.success(`Đã ${action} người dùng ${userName} thành công!`);
+    const handleDeleteUser = async (userId, userName) => {
+        const result = await Swal.fire({
+            title: 'Xóa người dùng',
+            text: `Bạn có chắc chắn muốn xóa người dùng "${userName}" không? Hành động này không thể hoàn tác.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Xác nhận',
+            cancelButtonText: 'Hủy',
+            confirmButtonColor: '#d33'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await ApiService.deleteUserById(userId);
+                if (response.status === 200) {
+                    setUsers(users.filter(user => user.id !== userId));
+                    setTotalItems(totalItems - 1);
+                    Swal.fire('Thành công!', `Đã xóa người dùng "${userName}"`, 'success');
+                } else {
+                    Swal.fire('Lỗi!', `Không thể xóa người dùng "${userName}"`, 'error');
+                }
+            } catch (error) {
+                Swal.fire('Lỗi!', `Không thể xóa người dùng "${userName}"`, 'error');
+                console.error('Delete User Error:', error);
+            }
+        }
     };
 
-    // Table columns configuration
     const columns = [
         {
             title: 'Người dùng',
-            dataIndex: 'name',
             key: 'name',
-            render: (text, record) => (
-                <Space>
-                    <Avatar size={40} icon={<UserOutlined />} style={{ backgroundColor: '#1890ff' }}>
-                        {text.charAt(0)}
-                    </Avatar>
-                    <span style={{ fontWeight: 500 }}>{text}</span>
-                </Space>
-            ),
-            sorter: (a, b) => a.name.localeCompare(b.name),
+            render: (record) => {
+                const fullName = `${record.firstName} ${record.lastName}`.trim();
+                return (
+                    <Space>
+                        <Avatar size={40} icon={<UserOutlined />} style={{ backgroundColor: '#1890ff' }}>
+                            {fullName.charAt(0) || 'U'}
+                        </Avatar>
+                        <span style={{ fontWeight: 500 }}>{fullName || 'Không tên'}</span>
+                    </Space>
+                );
+            },
+            sorter: (a, b) => `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`),
         },
         {
             title: 'Email',
@@ -91,11 +111,15 @@ const UserList = () => {
             sorter: (a, b) => a.email.localeCompare(b.email),
         },
         {
-            title: 'Ngày tham gia',
-            dataIndex: 'joinDate',
-            key: 'joinDate',
-            render: (date) => formatDate(date),
-            sorter: (a, b) => new Date(a.joinDate) - new Date(b.joinDate),
+            title: 'Số điện thoại',
+            dataIndex: 'phoneNumber',
+            key: 'phoneNumber',
+        },
+        {
+            title: 'Điểm thành tựu',
+            dataIndex: 'achievementPoint',
+            key: 'achievementPoint',
+            sorter: (a, b) => a.achievementPoint - b.achievementPoint,
         },
         {
             title: 'Vai trò',
@@ -103,16 +127,14 @@ const UserList = () => {
             key: 'role',
             render: (role) => {
                 const roleConfig = {
-                    admin: { color: 'purple', text: 'Quản trị viên' },
-                    moderator: { color: 'blue', text: 'Điều hành viên' },
-                    user: { color: 'default', text: 'Người dùng' }
+                    organizer: { color: 'blue', text: 'Tổ chức viên' },
+                    user: { color: 'default', text: 'Người dùng' },
                 };
                 const config = roleConfig[role] || roleConfig.user;
                 return <Tag color={config.color}>{config.text}</Tag>;
             },
             filters: [
-                { text: 'Quản trị viên', value: 'admin' },
-                { text: 'Điều hành viên', value: 'moderator' },
+                { text: 'Tổ chức viên', value: 'organizer' },
                 { text: 'Người dùng', value: 'user' },
             ],
             onFilter: (value, record) => record.role === value,
@@ -135,54 +157,39 @@ const UserList = () => {
         {
             title: 'Hành động',
             key: 'action',
-            render: (_, record) => (
-                <Popconfirm
-                    title={`${record.status === 'active' ? 'Cấm' : 'Bỏ cấm'} người dùng`}
-                    description={`Bạn có chắc chắn muốn ${record.status === 'active' ? 'cấm' : 'bỏ cấm'} người dùng "${record.name}" không?`}
-                    onConfirm={() => handleBanUnban(record.id, record.name, record.status)}
-                    okText="Xác nhận"
-                    cancelText="Hủy"
-                    okType={record.status === 'active' ? 'danger' : 'primary'}
-                >
-                    <Button 
-                        type={record.status === 'active' ? 'primary' : 'default'}
-                        danger={record.status === 'active'}
+            render: (_, record) => {
+                const fullName = `${record.firstName} ${record.lastName}`.trim();
+                return (
+                    <Button
+                        type="primary"
+                        danger
                         size="small"
+                        onClick={() => handleDeleteUser(record.id, fullName)}
                     >
-                        {record.status === 'active' ? 'Cấm' : 'Bỏ cấm'}
+                        Xóa
                     </Button>
-                </Popconfirm>
-            ),
+                );
+            },
         },
     ];
 
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('vi-VN');
-    };
-
-    // Filter data based on search term
-    const filteredData = users.filter(user => 
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredData = users.filter(user => {
+        const name = `${user.firstName} ${user.lastName}`.toLowerCase();
+        const email = user.email.toLowerCase();
+        return name.includes(searchTerm.toLowerCase()) || email.includes(searchTerm.toLowerCase());
+    });
 
     return (
         <div className="flex h-screen">
             <AdminSidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-
             <div className="flex flex-col flex-1 overflow-hidden">
                 <AdminHeader />
-                
                 <div className="flex-1 overflow-auto p-6">
                     <div className="bg-white rounded-lg shadow-sm p-6">
-                        {/* Header */}
                         <div className="mb-6">
                             <h2 className="text-2xl font-semibold text-gray-800 mb-2">Quản lý người dùng</h2>
                             <p className="text-gray-600">Danh sách tất cả người dùng trong hệ thống</p>
                         </div>
-
-                        {/* Search */}
                         <div className="mb-4">
                             <Input
                                 placeholder="Tìm kiếm theo tên hoặc email..."
@@ -193,20 +200,19 @@ const UserList = () => {
                                 allowClear
                             />
                         </div>
-
-                        {/* Table */}
                         <Table
                             columns={columns}
                             dataSource={filteredData}
                             rowKey="id"
                             pagination={{
-                                total: filteredData.length,
-                                pageSize: 10,
-                                showSizeChanger: true,
+                                total: totalItems,
+                                pageSize: itemsPerPage,
+                                current: currentPage,
+                                onChange: (page) => setCurrentPage(page),
+                                showSizeChanger: false,
                                 showQuickJumper: true,
-                                showTotal: (total, range) => 
+                                showTotal: (total, range) =>
                                     `${range[0]}-${range[1]} của ${total} người dùng`,
-                                pageSizeOptions: ['5', '10', '20', '50'],
                             }}
                             scroll={{ x: 800 }}
                             size="middle"
@@ -215,7 +221,7 @@ const UserList = () => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default UserList
+export default UserList;

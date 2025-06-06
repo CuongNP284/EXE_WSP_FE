@@ -186,6 +186,7 @@ const CategoryList = () => {
                 type="primary"
                 icon={<PlusOutlined />}
                 onClick={() => handleCreateOrUpdate()}
+                style={{backgroundColor: '#091238', borderColor: '#091238'}}
               >
                 Tạo danh mục mới
               </Button>

@@ -210,6 +210,7 @@ const BadgeList = () => {
                 type="primary"
                 icon={<PlusOutlined />}
                 onClick={() => handleCreateOrUpdate()}
+                style={{backgroundColor: '#091238', borderColor: '#091238'}}
               >
                 Tạo danh hiệu mới
               </Button>

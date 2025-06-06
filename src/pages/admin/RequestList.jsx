@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Pagination, Empty } from 'antd';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import AdminHeader from '../../components/admin/AdminHeader';
+import ApiService from '../../service/ApiService';
 import { Calendar, Clock, MapPin, Users, Search, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 const RequestList = () => {
@@ -11,111 +12,55 @@ const RequestList = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState('newest');
     const [currentPage, setCurrentPage] = useState(1);
+    const [workshopRequests, setWorkshopRequests] = useState([]);
+    const [totalItems, setTotalItems] = useState(0);
     const itemsPerPage = 6;
+
+    useEffect(() => {
+        fetchWorkshopRequests();
+    }, [currentPage]);
+
+    const fetchWorkshopRequests = async () => {
+        try {
+            const params = {
+                pageSize: itemsPerPage,
+                page: currentPage,
+                includeDeleted: false
+            };
+            const response = await ApiService.getPendingWorkshopsForAdmin(params);
+            if (response.status === 200) {
+                const items = response.data.data?.items || response.data.items || [];
+                const total = response.data.data?.count || response.data.totalItems || 0;
+                // Map API response to the expected format
+                const formattedRequests = items.map(workshop => ({
+                    id: workshop.id,
+                    name: workshop.title,
+                    description: workshop.description,
+                    image: workshop.image || "https://via.placeholder.com/800x400", // Fallback image if not provided
+                    submittedDate: workshop.createdAt,
+                    reviewDate: workshop.updatedAt || "",
+                    date: workshop.startDate,
+                    time: `${new Date(workshop.startDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - ${new Date(workshop.endDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`,
+                    location: workshop.location,
+                    status: workshop.status,
+                    price: `${workshop.price.toLocaleString('vi-VN')} VNĐ`,
+                    organizer: workshop.organizerName || "Unknown Organizer",
+                    category: workshop.categoryName || "Uncategorized",
+                    reviewNotes: workshop.reviewNotes || ""
+                }));
+                setWorkshopRequests(formattedRequests);
+                setTotalItems(total);
+            } else {
+                console.error('Failed to fetch workshop requests:', response.message);
+            }
+        } catch (error) {
+            console.error('Fetch Workshop Requests Error:', error);
+        }
+    };
 
     const toggleSidebar = () => {
         setSidebarOpen(!sidebarOpen);
     };
-
-    // Mock workshop request data
-    const workshopRequests = [
-        {
-            id: 1,
-            name: "Workshop Thiết kế UX/UI cho người mới bắt đầu",
-            description: "Khóa học thiết kế giao diện người dùng từ cơ bản đến nâng cao, sử dụng Figma và các công cụ thiết kế hiện đại.",
-            image: "https://caodangquoctehanoi.edu.vn/wp-content/uploads/2023/10/huong-nghiep-40-thiet-ke-do-hoa-7-1385x800-1.jpg",
-            submittedDate: "2024-06-01",
-            reviewDate: "2024-06-03",
-            date: "2024-07-15",
-            time: "09:00 - 17:00",
-            location: "Trung tâm Đào tạo Digital, Quận 1",
-            status: "pending",
-            price: "1,500,000 VNĐ",
-            organizer: "Nguyễn Văn A",
-            category: "Thiết kế",
-            reviewNotes: ""
-        },
-        {
-            id: 2,
-            name: "Khóa học Yoga trị liệu cho dân văn phòng",
-            description: "Các bài tập yoga giúp giảm đau lưng, căng thẳng và cải thiện tư thế cho người làm việc văn phòng.",
-            image: "https://tokyo-human.edu.vn/wp-content/uploads/2023/05/d0ae430981ec5fb206fd.jpg",
-            submittedDate: "2024-05-28",
-            reviewDate: "2024-05-30",
-            date: "2024-06-20",
-            time: "18:00 - 20:00",
-            location: "Studio Yoga Harmony, Quận 3",
-            status: "approved",
-            price: "800,000 VNĐ",
-            organizer: "Trần Thị B",
-            category: "Sức khỏe",
-            reviewNotes: "Workshop được phê duyệt. Nội dung chất lượng và phù hợp với nhu cầu."
-        },
-        {
-            id: 3,
-            name: "Workshop Marketing Content cho SME",
-            description: "Chiến lược xây dựng nội dung marketing hiệu quả cho doanh nghiệp vừa và nhỏ trên các nền tảng số.",
-            image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-            submittedDate: "2024-05-25",
-            reviewDate: "2024-05-27",
-            date: "2024-06-30",
-            time: "13:00 - 17:00",
-            location: "Coworking Space Innovation, Quận 7",
-            status: "rejected",
-            price: "1,200,000 VNĐ",
-            organizer: "Lê Minh C",
-            category: "Marketing",
-            reviewNotes: "Nội dung workshop cần được bổ sung thêm phần thực hành. Vui lòng chỉnh sửa và gửi lại."
-        },
-        {
-            id: 4,
-            name: "Khóa học Nhiếp ảnh Street Photography",
-            description: "Kỹ thuật chụp ảnh đường phố, bắt bóng và ánh sáng tự nhiên để tạo ra những bức ảnh nghệ thuật.",
-            image: "https://gobranding.com.vn/wp-content/uploads/2023/06/5-photographer-la-gi.jpg",
-            submittedDate: "2024-06-05",
-            reviewDate: "",
-            date: "2024-07-20",
-            time: "06:00 - 10:00",
-            location: "Phố đi bộ Nguyễn Huệ, Quận 1",
-            status: "pending",
-            price: "900,000 VNĐ",
-            organizer: "Phạm Văn D",
-            category: "Nghệ thuật",
-            reviewNotes: ""
-        },
-        {
-            id: 5,
-            name: "Workshop Nấu ăn Chay sáng tạo",
-            description: "Khám phá những món ăn chay độc đáo, bổ dưỡng và hấp dẫn với nguyên liệu tự nhiên.",
-            image: "https://ik.imagekit.io/tvlk/blog/2023/06/do-an-y-2.jpg?tr=q-70,c-at_max,w-500,h-300,dpr-2",
-            submittedDate: "2024-05-20",
-            reviewDate: "2024-05-22",
-            date: "2024-06-25",
-            time: "10:00 - 14:00",
-            location: "Kitchen Studio Green, Quận 2",
-            status: "approved",
-            price: "700,000 VNĐ",
-            organizer: "Ngô Thị E",
-            category: "Ẩm thực",
-            reviewNotes: "Workshop có nội dung hay và giảng viên có kinh nghiệm. Được phê duyệt."
-        },
-        {
-            id: 6,
-            name: "Khóa học Đầu tư Chứng khoán cơ bản",
-            description: "Hướng dẫn đầu tư chứng khoán an toàn và hiệu quả cho người mới bắt đầu.",
-            image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-            submittedDate: "2024-06-08",
-            reviewDate: "",
-            date: "2024-08-01",
-            time: "14:00 - 18:00",
-            location: "Trung tâm Tài chính, Quận 1",
-            status: "pending",
-            price: "2,000,000 VNĐ",
-            organizer: "Hoàng Văn F",
-            category: "Tài chính",
-            reviewNotes: ""
-        }
-    ];
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -378,7 +323,7 @@ const RequestList = () => {
                                 <Pagination
                                     current={currentPage}
                                     pageSize={itemsPerPage}
-                                    total={sortedRequests.length}
+                                    total={totalItems}
                                     onChange={handlePageChange}
                                     showSizeChanger={false}
                                     showQuickJumper={false}

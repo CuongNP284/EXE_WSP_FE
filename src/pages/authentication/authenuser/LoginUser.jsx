@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import ApiService from '../../../service/ApiService';
+import Swal from 'sweetalert2';
 
 const LoginUser = () => {
   const [formData, setFormData] = useState({
@@ -10,11 +13,55 @@ const LoginUser = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Thêm logic đăng nhập tại đây
-    console.log('Form đăng nhập đã được gửi:', formData);
+    try {
+      console.log('Login attempt with:', formData);
+      const response = await ApiService.loginUser(formData);
+      console.log('API Response:', response);
+
+      if (response.status === 200 && response.data && response.data.accessToken) {
+        // Fetch user info to get userId and role
+        const userInfoResponse = await ApiService.getLoggedInUserInfo();
+        if (userInfoResponse.status === 200 && userInfoResponse.data) {
+          // Store userId in localStorage
+          localStorage.setItem('userId', userInfoResponse.data.id);
+        } else {
+          throw new Error('Failed to fetch user info after login');
+        }
+
+        // Success message
+        await Swal.fire({
+          title: 'Success',
+          text: 'Login successful!',
+          icon: 'success'
+        });
+
+        // Redirect based on role
+        const role = userInfoResponse?.data?.role || "USER";
+        switch (role) {
+          case 'ADMIN':
+            navigate('/admindashboard');
+            break;
+          case 'ORGANIZER':
+            navigate('/organizerdashboard');
+            break;
+          case 'USER':
+            navigate('/');
+            break;
+          default:
+            navigate('/');
+        }
+      } else {
+        Swal.fire('Error', response.message || 'Login failed', 'error');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      Swal.fire('Error', error.message || 'Unable to log in user', 'error');
+    }
   };
+
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -67,20 +114,12 @@ const LoginUser = () => {
               {/* Hộp kiểm Ghi nhớ */}
               <div className='flex justify-between mb-2'>
                 <div className="mb-6 flex items-center">
-                  <input
-                    type="checkbox"
-                    id="remember"
-                    className="h-4 w-4 text-blue-900 rounded border-gray-300 focus:ring-blue-900"
-                  />
-                  <label htmlFor="remember" className="ml-2 block text-gray-600">
-                    Hãy nhớ tôi
-                  </label>
+
                 </div>
                 <a href="/resetpassword" className="text-sm text-blue-900 hover:underline">
-                    Bạn quên mật khẩu của mình?
-                  </a>
+                  Bạn quên mật khẩu của mình?
+                </a>
               </div>
-
 
               {/* Nút Gửi */}
               <button
@@ -100,7 +139,7 @@ const LoginUser = () => {
                 <div className="flex-grow border-t border-gray-300"></div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid gap-4">
                 <button className="flex justify-center items-center py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-300">
                   <svg className="w-6 h-6" viewBox="0 0 24 24">
                     <path
@@ -119,19 +158,6 @@ const LoginUser = () => {
                       fill="#EA4335"
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
-                  </svg>
-                </button>
-                <button className="flex justify-center items-center py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-300">
-                  <svg className="w-6 h-6" viewBox="0 0 24 24">
-                    <path
-                      fill="#1877F2"
-                      d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
-                    />
-                  </svg>
-                </button>
-                <button className="flex justify-center items-center py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-300">
-                  <svg className="w-6 h-6" viewBox="0 0 24 24">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                   </svg>
                 </button>
               </div>

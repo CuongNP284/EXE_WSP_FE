@@ -1,89 +1,50 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Pagination, Empty, Popconfirm, message } from 'antd'
-import AdminSidebar from '../../components/admin/AdminSidebar'
-import AdminHeader from '../../components/admin/AdminHeader'
-import { Calendar, Clock, Eye, Edit, Trash2, Plus, User, Tag } from 'lucide-react'
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
+import { Pagination, Empty } from 'antd';
+import ApiService from '../../service/ApiService';
+import AdminSidebar from '../../components/admin/AdminSidebar';
+import AdminHeader from '../../components/admin/AdminHeader';
+import { Calendar, Clock, Eye, Trash2, Plus, User, Tag } from 'lucide-react';
 
 const BlogList = () => {
+    const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const [blogs, setBlogs] = useState([
-        {
-            id: 1,
-            title: "10 Mẹo Học Tiếng Anh Hiệu Quả Cho Người Mới Bắt Đầu",
-            excerpt: "Khám phá những phương pháp học tiếng Anh thú vị và hiệu quả nhất dành cho người mới bắt đầu. Từ việc xây dựng nền tảng từ vựng đến luyện phát âm chuẩn.",
-            image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-            author: "Nguyễn Văn A",
-            publishDate: "2024-05-20",
-            status: "published",
-            category: "Giáo dục",
-            views: 1250,
-            readTime: "5 phút đọc"
-        },
-        {
-            id: 2,
-            title: "Xu Hướng Công Nghệ 2024: AI và Machine Learning",
-            excerpt: "Phân tích sâu về những xu hướng công nghệ mới nhất trong năm 2024. Trí tuệ nhân tạo và machine learning đang thay đổi cách chúng ta làm việc và sống.",
-            image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-            author: "Trần Thị B",
-            publishDate: "2024-05-18",
-            status: "published",
-            category: "Công nghệ",
-            views: 2100,
-            readTime: "8 phút đọc"
-        },
-        {
-            id: 3,
-            title: "Hướng Dẫn Nấu Ăn Healthy Cho Người Bận Rộn",
-            excerpt: "Bộ sưu tập công thức nấu ăn lành mạnh, nhanh gọn dành cho những người có lối sống bận rộn. Từ salad đến smoothie bowl dinh dưỡng.",
-            image: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-            author: "Lê Văn C",
-            publishDate: "2024-05-15",
-            status: "draft",
-            category: "Ẩm thực",
-            views: 0,
-            readTime: "6 phút đọc"
-        },
-        {
-            id: 4,
-            title: "Phong Cách Sống Minimalism: Đơn Giản Hóa Cuộc Sống",
-            excerpt: "Khám phá triết lý sống tối giản và cách áp dụng minimalism vào cuộc sống hàng ngày để tìm lại sự cân bằng và hạnh phúc thực sự.",
-            image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-            author: "Phạm Thị D",
-            publishDate: "2024-05-12",
-            status: "published",
-            category: "Lifestyle",
-            views: 890,
-            readTime: "7 phút đọc"
-        },
-        {
-            id: 5,
-            title: "Kinh Nghiệm Du Lịch Bụi Đông Nam Á",
-            excerpt: "Chia sẻ kinh nghiệm thực tế về du lịch bụi tại các nước Đông Nam Á. Từ lập kế hoạch chi tiết đến những mẹo tiết kiệm chi phí hiệu quả.",
-            image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-            author: "Hoàng Văn E",
-            publishDate: "2024-05-10",
-            status: "published",
-            category: "Du lịch",
-            views: 1680,
-            readTime: "10 phút đọc"
-        },
-        {
-            id: 6,
-            title: "Đầu Tư Tài Chính Cá Nhân Cho Người Trẻ",
-            excerpt: "Hướng dẫn cơ bản về đầu tư và quản lý tài chính cá nhân dành cho thế hệ Gen Z và Millennials. Bắt đầu xây dựng tài sản từ sớm.",
-            image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-            author: "Ngô Thị F",
-            publishDate: "2024-05-08",
-            status: "published",
-            category: "Tài chính",
-            views: 3200,
-            readTime: "12 phút đọc"
-        }
-    ]);
-    
+    const [blogs, setBlogs] = useState([]);
+    const [totalItems, setTotalItems] = useState(0);
     const itemsPerPage = 6;
+
+    useEffect(() => {
+        fetchBlogs();
+    }, [currentPage]);
+
+    const fetchBlogs = async () => {
+        try {
+            const params = {
+                pageSize: itemsPerPage,
+                page: currentPage,
+                includeDeleted: false
+            };
+            const response = await ApiService.getAllBlogPosts(params);
+            if (response.status === 200) {
+                setBlogs(response.data.data.items || []); // Assuming the API returns an "items" array
+                setTotalItems(response.data.totalItems || 0); // Assuming the API returns "totalItems"
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: response.message || 'Không thể tải danh sách blog.',
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Đã xảy ra lỗi khi tải danh sách blog.',
+            });
+        }
+    };
 
     const toggleSidebar = () => {
         setSidebarOpen(!sidebarOpen);
@@ -115,9 +76,43 @@ const BlogList = () => {
         }
     };
 
-    const handleDeleteBlog = (blogId, blogTitle) => {
-        setBlogs(blogs.filter(blog => blog.id !== blogId));
-        message.success(`Đã xóa bài viết "${blogTitle}" thành công!`);
+    const handleDeleteBlog = async (blogId, blogTitle) => {
+        Swal.fire({
+            title: 'Xóa bài viết',
+            text: `Bạn có chắc chắn muốn xóa bài viết "${blogTitle}" không?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Xác nhận',
+            cancelButtonText: 'Hủy'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const response = await ApiService.deleteBlogPost(blogId);
+                    if (response.status === 200) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Thành công',
+                            text: `Đã xóa bài viết "${blogTitle}" thành công!`,
+                        });
+                        fetchBlogs(); // Refresh the list after deletion
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: response.message || 'Không thể xóa bài viết.',
+                        });
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: 'Đã xảy ra lỗi khi xóa bài viết.',
+                    });
+                }
+            }
+        });
     };
 
     const formatDate = (dateString) => {
@@ -131,11 +126,6 @@ const BlogList = () => {
         }
         return views.toString();
     };
-
-    // Pagination logic
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentBlogs = blogs.slice(indexOfFirstItem, indexOfLastItem);
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
@@ -177,18 +167,18 @@ const BlogList = () => {
                     ) : (
                         <>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {currentBlogs.map((blog) => (
-                                    <div key={blog.id} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
-                                        {/* Blog Image */}
+                                {blogs.map((blog) => (
+                                    <div key={blog.blogPostId} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+                                        {/* Blog Image - Placeholder since schema doesn't include image */}
                                         <div className="relative">
                                             <img
-                                                src={blog.image}
+                                                src="https://images.stockcake.com/public/5/4/1/5417e74f-10cd-4be6-b128-85492eb59acc_large/creative-team-meeting-stockcake.jpg" // Placeholder image since schema doesn't have image
                                                 alt={blog.title}
                                                 className="w-full h-48 object-cover rounded-t-lg"
                                             />
                                             <div className="absolute top-3 right-3">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(blog.status)}`}>
-                                                    {getStatusText(blog.status)}
+                                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor('published')}`}>
+                                                    {getStatusText('published')} {/* Status not in schema, default to "published" */}
                                                 </span>
                                             </div>
                                         </div>
@@ -199,56 +189,24 @@ const BlogList = () => {
                                                 {blog.title}
                                             </h3>
                                             <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                                                {blog.excerpt}
+                                                {blog.content.substring(0, 100) + '...'} {/* Excerpt from content since schema doesn't have excerpt */}
                                             </p>
-
-                                            {/* Blog Details */}
-                                            <div className="space-y-2 mb-4">
-                                                <div className="flex items-center text-sm text-gray-600">
-                                                    <User size={16} className="mr-2 text-gray-400" />
-                                                    <span>{blog.author}</span>
-                                                </div>
-                                                <div className="flex items-center text-sm text-gray-600">
-                                                    <Calendar size={16} className="mr-2 text-gray-400" />
-                                                    <span>{formatDate(blog.publishDate)}</span>
-                                                </div>
-                                                <div className="flex items-center text-sm text-gray-600">
-                                                    <Tag size={16} className="mr-2 text-gray-400" />
-                                                    <span>{blog.category}</span>
-                                                </div>
-                                                <div className="flex items-center justify-between text-sm text-gray-600">
-                                                    <div className="flex items-center">
-                                                        <Eye size={16} className="mr-2 text-gray-400" />
-                                                        <span>{formatViews(blog.views)} lượt xem</span>
-                                                    </div>
-                                                    <div className="flex items-center">
-                                                        <Clock size={16} className="mr-2 text-gray-400" />
-                                                        <span>{blog.readTime}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
 
                                             {/* Action Buttons */}
                                             <div className="flex space-x-2">
                                                 <Link 
-                                                    to={`/blogedit/${blog.id}`} 
+                                                    to={`/blogedit/${blog.blogPostId}`} 
                                                     className="flex-1 bg-[#091238] hover:bg-gray-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 no-underline"
                                                 >
                                                     <Eye size={16} />
                                                     Xem chi tiết
                                                 </Link>                                  
-                                                <Popconfirm
-                                                    title="Xóa bài viết"
-                                                    description={`Bạn có chắc chắn muốn xóa bài viết "${blog.title}" không?`}
-                                                    onConfirm={() => handleDeleteBlog(blog.id, blog.title)}
-                                                    okText="Xác nhận"
-                                                    cancelText="Hủy"
-                                                    okType="danger"
+                                                <button 
+                                                    onClick={() => handleDeleteBlog(blog.blogPostId, blog.title)}
+                                                    className="bg-red-100 hover:bg-red-200 text-red-600 py-2 px-3 rounded-lg transition-colors"
                                                 >
-                                                    <button className="bg-red-100 hover:bg-red-200 text-red-600 py-2 px-3 rounded-lg transition-colors">
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                </Popconfirm>
+                                                    <Trash2 size={16} />
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -260,7 +218,7 @@ const BlogList = () => {
                                 <Pagination
                                     current={currentPage}
                                     pageSize={itemsPerPage}
-                                    total={blogs.length}
+                                    total={totalItems}
                                     onChange={handlePageChange}
                                     showSizeChanger={false}
                                     showQuickJumper={false}
@@ -271,7 +229,7 @@ const BlogList = () => {
                 </main>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default BlogList
+export default BlogList;

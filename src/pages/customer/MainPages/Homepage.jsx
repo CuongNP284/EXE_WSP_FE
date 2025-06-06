@@ -329,7 +329,7 @@ const Homepage = () => {
 
                     {/* Action Button */}
                     <Link
-                      to={`/workshopdetail/${workshop.id}`}
+                      to={`/workshopdetail`}
                       className="w-full bg-[#091238] hover:bg-opacity-90 text-white py-3 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 no-underline"
                     >
                       <Eye size={16} />
@@ -467,7 +467,7 @@ const Homepage = () => {
                 Chúng tôi đã, đang và sẽ tiếp tục bất lực nhiệt đới để mang đến cho bạn những thông tin chính xác nhất có thể. Thêm vào đó, chúng tôi luôn sẵn sàng để mọi dự án đều có thể xem.
               </p>
               <Link
-                to="/about"
+                to="/aboutus"
                 className="bg-[#091238] hover:bg-opacity-90 text-white py-3 px-6 rounded-lg font-medium transition-colors text-center"
               >
                 Xem chi tiết

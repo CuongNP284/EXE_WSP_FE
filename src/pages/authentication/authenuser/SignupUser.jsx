@@ -1,45 +1,93 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import ApiService from '../../../service/ApiService';
+import Swal from 'sweetalert2';
 
 const SignupUser = () => {
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    phoneNumber: ''
   });
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Thêm logic đăng ký tại đây
-    console.log('Form đăng ký đã gửi:', formData);
+    if (formData.password !== formData.confirmPassword) {
+      Swal.fire('Error', 'Passwords do not match', 'error');
+      return;
+    }
+
+    try {
+      const registrationData = {
+        email: formData.email,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        password: formData.password,
+        phoneNumber: formData.phoneNumber,
+        userRole: 2, // Hardcoded to 2 for USER role
+        status: 1 // Hardcoded to true as requested
+      };
+      console.log('Signup attempt with:', registrationData);
+      const response = await ApiService.registerUser(registrationData);
+      if (response.status === 200) {
+        Swal.fire('Success', 'User Successfully Registered, Now Please Sign In', 'success');
+        navigate('/loginuser');
+      } else {
+        Swal.fire('Error', response.message, 'error');
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      Swal.fire('Error', error.message || 'Unable to register user', 'error');
+    }
   };
+
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Thẻ */}
+        {/* Card */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Tiêu đề */}
+          {/* Header */}
           <div className="px-8 pt-8 pb-4">
             <h1 className="text-3xl font-bold text-gray-800 text-center">Tạo Tài Khoản</h1>
             <p className="text-center text-gray-600 mt-2">Tham gia cộng đồng của chúng tôi ngay hôm nay</p>
           </div>
 
-          {/* Container Form */}
+          {/* Form Container */}
           <div className="px-8 py-6">
             <form onSubmit={handleSubmit}>
-              {/* Trường Tên */}
+              {/* First Name Field */}
               <div className="mb-6">
-                <label className="block text-gray-600 font-medium mb-2">Họ Tên Đầy Đủ</label>
+                <label className="block text-gray-600 font-medium mb-2">Họ</label>
                 <div className="relative">
                   <input
                     type="text"
-                    name="name"
-                    value={formData.name}
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900 focus:border-transparent outline-none transition-colors duration-300"
+                    placeholder="Nhập họ của bạn"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Last Name Field */}
+              <div className="mb-6">
+                <label className="block text-gray-600 font-medium mb-2">Tên</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
                     onChange={handleChange}
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900 focus:border-transparent outline-none transition-colors duration-300"
                     placeholder="Nhập tên của bạn"
@@ -48,7 +96,7 @@ const SignupUser = () => {
                 </div>
               </div>
 
-              {/* Trường Email */}
+              {/* Email Field */}
               <div className="mb-6">
                 <label className="block text-gray-600 font-medium mb-2">Địa Chỉ Email</label>
                 <div className="relative">
@@ -64,7 +112,23 @@ const SignupUser = () => {
                 </div>
               </div>
 
-              {/* Trường Mật Khẩu */}
+              {/* Phone Number Field */}
+              <div className="mb-6">
+                <label className="block text-gray-600 font-medium mb-2">Số Điện Thoại</label>
+                <div className="relative">
+                  <input
+                    type="tel"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900 focus:border-transparent outline-none transition-colors duration-300"
+                    placeholder="Nhập số điện thoại của bạn"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Password Field */}
               <div className="mb-6">
                 <label className="block text-gray-600 font-medium mb-2">Mật Khẩu</label>
                 <div className="relative">
@@ -83,7 +147,7 @@ const SignupUser = () => {
                 </p>
               </div>
 
-              {/* Xác Nhận Mật Khẩu */}
+              {/* Confirm Password Field */}
               <div className="mb-6">
                 <label className="block text-gray-600 font-medium mb-2">Xác Nhận Mật Khẩu</label>
                 <div className="relative">
@@ -99,7 +163,7 @@ const SignupUser = () => {
                 </div>
               </div>
 
-              {/* Nút Gửi */}
+              {/* Submit Button */}
               <button
                 type="submit"
                 className="w-full py-3 px-4 text-white font-bold rounded-lg shadow-md transition-colors duration-300 transform hover:scale-105"
@@ -109,7 +173,7 @@ const SignupUser = () => {
               </button>
             </form>
 
-            {/* Tùy chọn đăng ký mạng xã hội */}
+            {/* Social Signup Options */}
             <div className="mt-8">
               <div className="flex items-center mb-6">
                 <div className="flex-grow border-t border-gray-300"></div>
@@ -117,7 +181,7 @@ const SignupUser = () => {
                 <div className="flex-grow border-t border-gray-300"></div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid gap-4">
                 <button className="flex justify-center items-center py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-300">
                   <svg className="w-6 h-6" viewBox="0 0 24 24">
                     <path
@@ -138,23 +202,10 @@ const SignupUser = () => {
                     />
                   </svg>
                 </button>
-                <button className="flex justify-center items-center py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-300">
-                  <svg className="w-6 h-6" viewBox="0 0 24 24">
-                    <path
-                      fill="#1877F2"
-                      d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
-                    />
-                  </svg>
-                </button>
-                <button className="flex justify-center items-center py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-300">
-                  <svg className="w-6 h-6" viewBox="0 0 24 24">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                  </svg>
-                </button>
               </div>
             </div>
 
-            {/* Liên kết đăng nhập */}
+            {/* Login Link */}
             <div className="text-center mt-8">
               <p className="text-gray-600">
                 Đã có tài khoản?{' '}

@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import ApiService from '../../../service/ApiService'; // Adjust the import path as needed
+import Swal from 'sweetalert2';
 
 const ResetPasswordPage = () => {
   const [step, setStep] = useState(1); // 1: Nhập email, 2: Xác minh OTP, 3: Mật khẩu mới
@@ -8,6 +11,8 @@ const ResetPasswordPage = () => {
     newPassword: '',
     confirmPassword: ''
   });
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -32,25 +37,63 @@ const ResetPasswordPage = () => {
     }
   };
 
-  const handleSubmitEmail = (e) => {
+  const handleSubmitEmail = async (e) => {
     e.preventDefault();
-    // Thêm logic xác minh email tại đây
-    console.log('Email gửi để đặt lại mật khẩu:', formData.email);
-    setStep(2);
+    try {
+      const response = await ApiService.forgetPassword({ email: formData.email });
+      if (response.status === 200) {
+        await Swal.fire({
+          title: 'Success',
+          text: response.message,
+          icon: 'success'
+        });
+        setStep(2);
+      } else {
+        Swal.fire('Error', response.message || 'Failed to send OTP', 'error');
+      }
+    } catch (error) {
+      console.error('Error during forget password:', error);
+      Swal.fire('Error', error.message || 'Unable to send OTP', 'error');
+    }
   };
 
   const handleSubmitOtp = (e) => {
     e.preventDefault();
-    // Thêm logic xác minh OTP tại đây
-    console.log('OTP đã gửi:', formData.otp.join(''));
-    setStep(3);
+    // Thêm logic xác minh OTP tại đây (giả định OTP hợp lệ nếu tất cả ô được điền)
+    const otp = formData.otp.join('');
+    if (otp.length === 6) {
+      setStep(3);
+    } else {
+      Swal.fire('Error', 'Please enter a valid 6-digit OTP', 'error');
+    }
   };
 
-  const handleSubmitNewPassword = (e) => {
+  const handleSubmitNewPassword = async (e) => {
     e.preventDefault();
-    // Thêm logic đặt mật khẩu mới tại đây
-    console.log('Mật khẩu mới đã gửi:', formData.newPassword);
-    // Chuyển hướng đến trang đăng nhập hoặc hiển thị thông báo thành công
+    if (formData.newPassword !== formData.confirmPassword) {
+      Swal.fire('Error', 'Passwords do not match', 'error');
+      return;
+    }
+    try {
+      const resetData = {
+        otp: formData.otp.join(''),
+        newPassword: formData.newPassword
+      };
+      const response = await ApiService.resetPassword(resetData);
+      if (response.status === 200) {
+        await Swal.fire({
+          title: 'Success',
+          text: response.message,
+          icon: 'success'
+        });
+        navigate('/loginuser');
+      } else {
+        Swal.fire('Error', response.message || 'Failed to reset password', 'error');
+      }
+    } catch (error) {
+      console.error('Error during password reset:', error);
+      Swal.fire('Error', error.message || 'Unable to reset password', 'error');
+    }
   };
 
   return (
@@ -127,7 +170,7 @@ const ResetPasswordPage = () => {
                     <button
                       type="button"
                       className="text-blue-900 hover:underline"
-                      onClick={() => console.log('Gửi lại OTP')}
+                      onClick={() => handleSubmitEmail(e)} // Gửi lại OTP
                     >
                       Gửi Lại
                     </button>

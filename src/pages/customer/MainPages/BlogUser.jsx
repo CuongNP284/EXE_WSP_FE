@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom'; // Import Link for navigation
 import CustomerHeader from '../../../components/customer/CustomerHeader';
 import CustomeFooter from '../../../components/customer/CustomeFooter';
 
@@ -9,158 +10,142 @@ const BlogUser = () => {
   const blogsPerPage = 9;
 
   const blogData = [
-  {
-    id: 1,
-    title: "13 ý tưởng cuộc thi và tặng quà trên mạng xã hội dành cho chuyên gia tổ chức sự kiện",
-    readTime: "8 PHÚT ĐỌC",
-    author: "Laura Bennett",
-    date: "10 Tháng 7, 2024",
-    image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-    topics: ["Mạng xã hội", "Marketing"],
-    slug: "social-media-contest-ideas-giveaways"
-  },
-  {
-    id: 2,
-    title: "50+ hashtag sự kiện nên dùng trên TikTok và Instagram",
-    readTime: "10 PHÚT ĐỌC",
-    author: "Laura Bennett",
-    date: "10 Tháng 7, 2024",
-    image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-    topics: ["Mạng xã hội"],
-    slug: "event-hashtags-tiktok-instagram"
-  },
-  {
-    id: 3,
-    title: "Cách tạo bộ lọc Snapchat cho sự kiện: Hướng dẫn từng bước",
-    readTime: "4 PHÚT ĐỌC",
-    author: "Rachel Grate",
-    date: "10 Tháng 7, 2024",
-    image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-    topics: ["Mạng xã hội"],
-    slug: "create-snapchat-filter-event"
-  },
-  {
-    id: 4,
-    title: "Mẹo lập kế hoạch sự kiện cho người mới bắt đầu",
-    readTime: "6 PHÚT ĐỌC",
-    author: "John Doe",
-    date: "15 Tháng 6, 2024",
-    image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-    topics: ["Lập kế hoạch sự kiện"],
-    slug: "event-planning-tips-beginners"
-  },
-  {
-    id: 5,
-    title: "Top 10 xu hướng sự kiện năm 2024",
-    readTime: "7 PHÚT ĐỌC",
-    author: "Jane Smith",
-    date: "20 Tháng 5, 2024",
-    image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-    topics: ["Lập kế hoạch sự kiện"],
-    slug: "top-event-trends-2024"
-  },
-  {
-    id: 6,
-    title: "Chiến lược tổ chức sự kiện trực tuyến thành công",
-    readTime: "5 PHÚT ĐỌC",
-    author: "Alice Johnson",
-    date: "10 Tháng 4, 2024",
-    image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-    topics: ["Sự kiện trực tuyến"],
-    slug: "virtual-event-success-strategies"
-  },
-  {
-    id: 7,
-    title: "Thực hành tốt nhất trong quản lý sự kiện doanh nghiệp",
-    readTime: "9 PHÚT ĐỌC",
-    author: "Mike Wilson",
-    date: "25 Tháng 3, 2024",
-    image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-    topics: ["Sự kiện doanh nghiệp"],
-    slug: "corporate-event-management-practices"
-  },
-  {
-    id: 8,
-    title: "Lịch trình lập kế hoạch đám cưới: Hướng dẫn đầy đủ",
-    readTime: "12 PHÚT ĐỌC",
-    author: "Sarah Davis",
-    date: "15 Tháng 3, 2024",
-    image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-    topics: ["Đám cưới"],
-    slug: "wedding-planning-timeline-guide"
-  },
-  {
-    id: 9,
-    title: "Mẹo và thủ thuật chụp ảnh sự kiện",
-    readTime: "6 PHÚT ĐỌC",
-    author: "Tom Brown",
-    date: "28 Tháng 2, 2024",
-    image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-    topics: ["Nhiếp ảnh"],
-    slug: "event-photography-tips-tricks"
-  },
-  {
-    id: 10,
-    title: "Ý tưởng trang trí sự kiện tiết kiệm chi phí",
-    readTime: "8 PHÚT ĐỌC",
-    author: "Lisa Green",
-    date: "20 Tháng 2, 2024",
-    image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-    topics: ["Lập kế hoạch sự kiện"],
-    slug: "budget-friendly-event-decoration"
-  },
-  {
-    id: 11,
-    title: "Lập kế hoạch thực đơn phục vụ tiệc cho sự kiện lớn",
-    readTime: "10 PHÚT ĐỌC",
-    author: "Chef Martinez",
-    date: "10 Tháng 2, 2024",
-    image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-    topics: ["Lập kế hoạch sự kiện"],
-    slug: "catering-menu-planning-large-events"
-  },
-  {
-    id: 12,
-    title: "Âm nhạc và giải trí cho sự kiện doanh nghiệp",
-    readTime: "7 PHÚT ĐỌC",
-    author: "DJ Roberts",
-    date: "30 Tháng 1, 2024",
-    image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-    topics: ["Sự kiện doanh nghiệp"],
-    slug: "music-entertainment-corporate-events"
-  },
-  {
-    id: 13,
-    title: "An ninh sự kiện: Các biện pháp an toàn cần thiết",
-    readTime: "11 PHÚT ĐỌC",
-    author: "Security Expert",
-    date: "25 Tháng 1, 2024",
-    image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-    topics: ["Lập kế hoạch sự kiện"],
-    slug: "event-security-safety-measures"
-  },
-  {
-    id: 14,
-    title: "Lập kế hoạch sự kiện bền vững: Hướng đến xanh hóa",
-    readTime: "9 PHÚT ĐỌC",
-    author: "Eco Evans",
-    date: "15 Tháng 1, 2024",
-    image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-    topics: ["Lập kế hoạch sự kiện"],
-    slug: "sustainable-event-planning-go-green"
-  },
-  {
-    id: 15,
-    title: "Xu hướng công nghệ sự kiện năm 2024",
-    readTime: "8 PHÚT ĐỌC",
-    author: "Tech Taylor",
-    date: "10 Tháng 1, 2024",
-    image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-    topics: ["Lập kế hoạch sự kiện"],
-    slug: "event-technology-trends-2024"
-  }
-];
-
+    {
+      id: 1,
+      title: "13 ý tưởng cuộc thi và tặng quà trên mạng xã hội dành cho chuyên gia tổ chức sự kiện",
+      readTime: "8 PHÚT ĐỌC",
+      author: "Laura Bennett",
+      date: "10 Tháng 7, 2024",
+      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
+      topics: ["Mạng xã hội", "Marketing"],
+    },
+    {
+      id: 2,
+      title: "50+ hashtag sự kiện nên dùng trên TikTok và Instagram",
+      readTime: "10 PHÚT ĐỌC",
+      author: "Laura Bennett",
+      date: "10 Tháng 7, 2024",
+      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
+      topics: ["Mạng xã hội"],
+    },
+    {
+      id: 3,
+      title: "Cách tạo bộ lọc Snapchat cho sự kiện: Hướng dẫn từng bước",
+      readTime: "4 PHÚT ĐỌC",
+      author: "Rachel Grate",
+      date: "10 Tháng 7, 2024",
+      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
+      topics: ["Mạng xã hội"],
+    },
+    {
+      id: 4,
+      title: "Mẹo lập kế hoạch sự kiện cho người mới bắt đầu",
+      readTime: "6 PHÚT ĐỌC",
+      author: "John Doe",
+      date: "15 Tháng 6, 2024",
+      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
+      topics: ["Lập kế hoạch sự kiện"],
+    },
+    {
+      id: 5,
+      title: "Top 10 xu hướng sự kiện năm 2024",
+      readTime: "7 PHÚT ĐỌC",
+      author: "Jane Smith",
+      date: "20 Tháng 5, 2024",
+      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
+      topics: ["Lập kế hoạch sự kiện"],
+    },
+    {
+      id: 6,
+      title: "Chiến lược tổ chức sự kiện trực tuyến thành công",
+      readTime: "5 PHÚT ĐỌC",
+      author: "Alice Johnson",
+      date: "10 Tháng 4, 2024",
+      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
+      topics: ["Sự kiện trực tuyến"],
+    },
+    {
+      id: 7,
+      title: "Thực hành tốt nhất trong quản lý sự kiện doanh nghiệp",
+      readTime: "9 PHÚT ĐỌC",
+      author: "Mike Wilson",
+      date: "25 Tháng 3, 2024",
+      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
+      topics: ["Sự kiện doanh nghiệp"],
+    },
+    {
+      id: 8,
+      title: "Lịch trình lập kế hoạch đám cưới: Hướng dẫn đầy đủ",
+      readTime: "12 PHÚT ĐỌC",
+      author: "Sarah Davis",
+      date: "15 Tháng 3, 2024",
+      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
+      topics: ["Đám cưới"],
+    },
+    {
+      id: 9,
+      title: "Mẹo và thủ thuật chụp ảnh sự kiện",
+      readTime: "6 PHÚT ĐỌC",
+      author: "Tom Brown",
+      date: "28 Tháng 2, 2024",
+      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
+      topics: ["Nhiếp ảnh"],
+    },
+    {
+      id: 10,
+      title: "Ý tưởng trang trí sự kiện tiết kiệm chi phí",
+      readTime: "8 PHÚT ĐỌC",
+      author: "Lisa Green",
+      date: "20 Tháng 2, 2024",
+      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
+      topics: ["Lập kế hoạch sự kiện"],
+    },
+    {
+      id: 11,
+      title: "Lập kế hoạch thực đơn phục vụ tiệc cho sự kiện lớn",
+      readTime: "10 PHÚT ĐỌC",
+      author: "Chef Martinez",
+      date: "10 Tháng 2, 2024",
+      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
+      topics: ["Lập kế hoạch sự kiện"],
+    },
+    {
+      id: 12,
+      title: "Âm nhạc và giải trí cho sự kiện doanh nghiệp",
+      readTime: "7 PHÚT ĐỌC",
+      author: "DJ Roberts",
+      date: "30 Tháng 1, 2024",
+      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
+      topics: ["Sự kiện doanh nghiệp"],
+    },
+    {
+      id: 13,
+      title: "An ninh sự kiện: Các biện pháp an toàn cần thiết",
+      readTime: "11 PHÚT ĐỌC",
+      author: "Security Expert",
+      date: "25 Tháng 1, 2024",
+      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
+      topics: ["Lập kế hoạch sự kiện"],
+    },
+    {
+      id: 14,
+      title: "Lập kế hoạch sự kiện bền vững: Hướng đến xanh hóa",
+      readTime: "9 PHÚT ĐỌC",
+      author: "Eco Evans",
+      date: "15 Tháng 1, 2024",
+      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
+      topics: ["Lập kế hoạch sự kiện"],
+    },
+    {
+      id: 15,
+      title: "Xu hướng công nghệ sự kiện năm 2024",
+      readTime: "8 PHÚT ĐỌC",
+      author: "Tech Taylor",
+      date: "10 Tháng 1, 2024",
+      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
+      topics: ["Lập kế hoạch sự kiện"],
+    }
+  ];
 
   const allTopics = useMemo(() => [
     "Social Media",
@@ -176,7 +161,7 @@ const BlogUser = () => {
       const matchesSearch = blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         blog.author.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesTopics = selectedTopics.length === 0 ||
-        selectedTopics.some(topic => blog.topics.includes(topic));
+        selectedTopics.some(topics => blog.topics.includes(topics));
       return matchesSearch && matchesTopics;
     });
   }, [searchTerm, selectedTopics]);
@@ -198,11 +183,11 @@ const BlogUser = () => {
     setCurrentPage(1);
   };
 
-  const handleTopicClick = (topic) => {
-    if (selectedTopics.includes(topic)) {
-      setSelectedTopics(selectedTopics.filter(t => t !== topic));
+  const handleTopicClick = (topics) => {
+    if (selectedTopics.includes(topics)) {
+      setSelectedTopics(selectedTopics.filter(t => t !== topics));
     } else {
-      setSelectedTopics([...selectedTopics, topic]);
+      setSelectedTopics([...selectedTopics, topics]);
     }
     setCurrentPage(1);
   };
@@ -211,10 +196,6 @@ const BlogUser = () => {
     setSelectedTopics([]);
     setSearchTerm('');
     setCurrentPage(1);
-  };
-
-  const handleBlogClick = (slug) => {
-    console.log(`Navigate to: /blog/${slug}`);
   };
 
   return (
@@ -266,33 +247,31 @@ const BlogUser = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {currentBlogs.map((blog) => (
                   <div key={blog.id} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
-                    <div
-                      className="cursor-pointer"
-                      onClick={() => handleBlogClick(blog.slug)}
-                    >
+                    <Link to={`/blog/${blog.id}`}>
                       <img
                         src={blog.image}
                         alt={blog.title}
                         className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
                       />
-                    </div>
+                    </Link>
                     <div className="p-4">
                       <div className="mb-2">
-                        {blog.topics.slice(0, 2).map((topic) => (
+                        {blog.topics.slice(0, 2).map((topics) => (
                           <span
-                            key={topic}
+                            key={topics}
                             className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-1 mb-1"
                           >
-                            {topic}
+                            {topics}
                           </span>
                         ))}
                       </div>
-                      <h2
-                        className="text-xl font-semibold mt-2 cursor-pointer hover:text-blue-600 transition-colors duration-300"
-                        onClick={() => handleBlogClick(blog.slug)}
-                      >
-                        {blog.title}
-                      </h2>
+                      <Link to={`/blog/${blog.id}`}>
+                        <h2
+                          className="text-xl font-semibold mt-2 hover:text-blue-600 transition-colors duration-300"
+                        >
+                          {blog.title}
+                        </h2>
+                      </Link>
                       <div className="flex justify-between items-center mt-3">
                         <p className="text-sm text-gray-600">Tác giả: {blog.author}</p>
                         <p className="text-sm text-gray-500">{blog.date}</p>
@@ -374,19 +353,19 @@ const BlogUser = () => {
             <div className="bg-white rounded-lg shadow-md p-6 sticky top-4">
               <h3 className="text-xl font-bold mb-4 text-gray-800">Lọc theo chủ đề</h3>
               <div className="space-y-2">
-                {allTopics.map((topic) => (
+                {allTopics.map((topics) => (
                   <div
-                    key={topic}
+                    key={topics}
                     className={`px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                      selectedTopics.includes(topic)
+                      selectedTopics.includes(topics)
                         ? 'bg-blue-100 text-blue-800 border border-blue-300'
                         : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                     }`}
-                    onClick={() => handleTopicClick(topic)}
+                    onClick={() => handleTopicClick(topics)}
                   >
-                    <span className="font-medium">{topic}</span>
+                    <span className="font-medium">{topics}</span>
                     <span className="text-sm ml-2">
-                      ({blogData.filter(blog => blog.topics.includes(topic)).length})
+                      ({blogData.filter(blog => blog.topics.includes(topics)).length})
                     </span>
                   </div>
                 ))}

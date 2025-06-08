@@ -52,7 +52,7 @@ const CustomerHeader = () => {
         <header className="bg-transparent px-4 py-3 flex items-center justify-between border-b border-gray-300">
             <div className="flex items-center space-x-4">
                 <Link to="/"><h1 className="text-2xl font-bold text-[#091238]">Workshophy</h1></Link>
-                <div className="relative flex-grow max-w-md">
+                <div className="relative flex-grow w-[700px]">
                     <input
                         type="text"
                         placeholder="Bạn muốn trải nghiệm workshop gì?"

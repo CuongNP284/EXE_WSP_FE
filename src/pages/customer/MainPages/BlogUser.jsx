@@ -1,151 +1,15 @@
-import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom'; // Import Link for navigation
+import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import CustomerHeader from '../../../components/customer/CustomerHeader';
 import CustomeFooter from '../../../components/customer/CustomeFooter';
+import ApiService from '../../../service/ApiService';
 
 const BlogUser = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTopics, setSelectedTopics] = useState([]);
+  const [blogs, setBlogs] = useState([]);
   const blogsPerPage = 9;
-
-  const blogData = [
-    {
-      id: 1,
-      title: "13 ý tưởng cuộc thi và tặng quà trên mạng xã hội dành cho chuyên gia tổ chức sự kiện",
-      readTime: "8 PHÚT ĐỌC",
-      author: "Laura Bennett",
-      date: "10 Tháng 7, 2024",
-      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-      topics: ["Mạng xã hội", "Marketing"],
-    },
-    {
-      id: 2,
-      title: "50+ hashtag sự kiện nên dùng trên TikTok và Instagram",
-      readTime: "10 PHÚT ĐỌC",
-      author: "Laura Bennett",
-      date: "10 Tháng 7, 2024",
-      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-      topics: ["Mạng xã hội"],
-    },
-    {
-      id: 3,
-      title: "Cách tạo bộ lọc Snapchat cho sự kiện: Hướng dẫn từng bước",
-      readTime: "4 PHÚT ĐỌC",
-      author: "Rachel Grate",
-      date: "10 Tháng 7, 2024",
-      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-      topics: ["Mạng xã hội"],
-    },
-    {
-      id: 4,
-      title: "Mẹo lập kế hoạch sự kiện cho người mới bắt đầu",
-      readTime: "6 PHÚT ĐỌC",
-      author: "John Doe",
-      date: "15 Tháng 6, 2024",
-      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-      topics: ["Lập kế hoạch sự kiện"],
-    },
-    {
-      id: 5,
-      title: "Top 10 xu hướng sự kiện năm 2024",
-      readTime: "7 PHÚT ĐỌC",
-      author: "Jane Smith",
-      date: "20 Tháng 5, 2024",
-      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-      topics: ["Lập kế hoạch sự kiện"],
-    },
-    {
-      id: 6,
-      title: "Chiến lược tổ chức sự kiện trực tuyến thành công",
-      readTime: "5 PHÚT ĐỌC",
-      author: "Alice Johnson",
-      date: "10 Tháng 4, 2024",
-      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-      topics: ["Sự kiện trực tuyến"],
-    },
-    {
-      id: 7,
-      title: "Thực hành tốt nhất trong quản lý sự kiện doanh nghiệp",
-      readTime: "9 PHÚT ĐỌC",
-      author: "Mike Wilson",
-      date: "25 Tháng 3, 2024",
-      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-      topics: ["Sự kiện doanh nghiệp"],
-    },
-    {
-      id: 8,
-      title: "Lịch trình lập kế hoạch đám cưới: Hướng dẫn đầy đủ",
-      readTime: "12 PHÚT ĐỌC",
-      author: "Sarah Davis",
-      date: "15 Tháng 3, 2024",
-      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-      topics: ["Đám cưới"],
-    },
-    {
-      id: 9,
-      title: "Mẹo và thủ thuật chụp ảnh sự kiện",
-      readTime: "6 PHÚT ĐỌC",
-      author: "Tom Brown",
-      date: "28 Tháng 2, 2024",
-      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-      topics: ["Nhiếp ảnh"],
-    },
-    {
-      id: 10,
-      title: "Ý tưởng trang trí sự kiện tiết kiệm chi phí",
-      readTime: "8 PHÚT ĐỌC",
-      author: "Lisa Green",
-      date: "20 Tháng 2, 2024",
-      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-      topics: ["Lập kế hoạch sự kiện"],
-    },
-    {
-      id: 11,
-      title: "Lập kế hoạch thực đơn phục vụ tiệc cho sự kiện lớn",
-      readTime: "10 PHÚT ĐỌC",
-      author: "Chef Martinez",
-      date: "10 Tháng 2, 2024",
-      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-      topics: ["Lập kế hoạch sự kiện"],
-    },
-    {
-      id: 12,
-      title: "Âm nhạc và giải trí cho sự kiện doanh nghiệp",
-      readTime: "7 PHÚT ĐỌC",
-      author: "DJ Roberts",
-      date: "30 Tháng 1, 2024",
-      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-      topics: ["Sự kiện doanh nghiệp"],
-    },
-    {
-      id: 13,
-      title: "An ninh sự kiện: Các biện pháp an toàn cần thiết",
-      readTime: "11 PHÚT ĐỌC",
-      author: "Security Expert",
-      date: "25 Tháng 1, 2024",
-      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-      topics: ["Lập kế hoạch sự kiện"],
-    },
-    {
-      id: 14,
-      title: "Lập kế hoạch sự kiện bền vững: Hướng đến xanh hóa",
-      readTime: "9 PHÚT ĐỌC",
-      author: "Eco Evans",
-      date: "15 Tháng 1, 2024",
-      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-      topics: ["Lập kế hoạch sự kiện"],
-    },
-    {
-      id: 15,
-      title: "Xu hướng công nghệ sự kiện năm 2024",
-      readTime: "8 PHÚT ĐỌC",
-      author: "Tech Taylor",
-      date: "10 Tháng 1, 2024",
-      image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-      topics: ["Lập kế hoạch sự kiện"],
-    }
-  ];
 
   const allTopics = useMemo(() => [
     "Social Media",
@@ -156,15 +20,32 @@ const BlogUser = () => {
     "Photography"
   ], []);
 
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      const response = await ApiService.getAllBlogPosts({ pageSize: 15, page: 1 });
+
+      const items = response?.data?.data?.items;
+      if (response.status === 200 && items) {
+        const mappedBlogs = items.map(blog => ({
+          ...blog,
+          readTime: `${Math.floor(Math.random() * 12) + 4} PHÚT ĐỌC`,
+          date: new Date(blog.createdAt).toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', year: 'numeric' }),
+          image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
+        }));
+        setBlogs(mappedBlogs);
+      } else {
+        console.error("Dữ liệu không hợp lệ:", response);
+      }
+    };
+    fetchBlogs();
+  }, [allTopics]);
+
   const filteredBlogs = useMemo(() => {
-    return blogData.filter(blog => {
-      const matchesSearch = blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        blog.author.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesTopics = selectedTopics.length === 0 ||
-        selectedTopics.some(topics => blog.topics.includes(topics));
-      return matchesSearch && matchesTopics;
+    return blogs.filter(blog => {
+      return blog.title.toLowerCase().includes(searchTerm.toLowerCase());
     });
-  }, [searchTerm, selectedTopics]);
+  }, [searchTerm, blogs]);
+
 
   const totalBlogs = filteredBlogs.length;
   const totalPages = Math.ceil(totalBlogs / blogsPerPage);
@@ -183,11 +64,11 @@ const BlogUser = () => {
     setCurrentPage(1);
   };
 
-  const handleTopicClick = (topics) => {
-    if (selectedTopics.includes(topics)) {
-      setSelectedTopics(selectedTopics.filter(t => t !== topics));
+  const handleTopicClick = (topic) => {
+    if (selectedTopics.includes(topic)) {
+      setSelectedTopics(selectedTopics.filter(t => t !== topic));
     } else {
-      setSelectedTopics([...selectedTopics, topics]);
+      setSelectedTopics([...selectedTopics, topic]);
     }
     setCurrentPage(1);
   };
@@ -246,8 +127,8 @@ const BlogUser = () => {
             {currentBlogs.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {currentBlogs.map((blog) => (
-                  <div key={blog.id} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
-                    <Link to={`/blog/${blog.id}`}>
+                  <div key={blog.blogPostId} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
+                    <Link to={`/blog/${blog.blogPostId}`}>
                       <img
                         src={blog.image}
                         alt={blog.title}
@@ -255,17 +136,8 @@ const BlogUser = () => {
                       />
                     </Link>
                     <div className="p-4">
-                      <div className="mb-2">
-                        {blog.topics.slice(0, 2).map((topics) => (
-                          <span
-                            key={topics}
-                            className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-1 mb-1"
-                          >
-                            {topics}
-                          </span>
-                        ))}
-                      </div>
-                      <Link to={`/blog/${blog.id}`}>
+
+                      <Link to={`/blog/${blog.blogPostId}`}>
                         <h2
                           className="text-xl font-semibold mt-2 hover:text-blue-600 transition-colors duration-300"
                         >
@@ -273,7 +145,7 @@ const BlogUser = () => {
                         </h2>
                       </Link>
                       <div className="flex justify-between items-center mt-3">
-                        <p className="text-sm text-gray-600">Tác giả: {blog.author}</p>
+                        <p className="text-sm text-gray-500">{blog.date}</p>
                         <p className="text-sm text-gray-500">{blog.date}</p>
                       </div>
                     </div>
@@ -347,39 +219,6 @@ const BlogUser = () => {
                 </button>
               </div>
             )}
-          </div>
-
-          <div className="lg:w-80">
-            <div className="bg-white rounded-lg shadow-md p-6 sticky top-4">
-              <h3 className="text-xl font-bold mb-4 text-gray-800">Lọc theo chủ đề</h3>
-              <div className="space-y-2">
-                {allTopics.map((topics) => (
-                  <div
-                    key={topics}
-                    className={`px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                      selectedTopics.includes(topics)
-                        ? 'bg-blue-100 text-blue-800 border border-blue-300'
-                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                    }`}
-                    onClick={() => handleTopicClick(topics)}
-                  >
-                    <span className="font-medium">{topics}</span>
-                    <span className="text-sm ml-2">
-                      ({blogData.filter(blog => blog.topics.includes(topics)).length})
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              {selectedTopics.length > 0 && (
-                <button
-                  onClick={() => setSelectedTopics([])}
-                  className="w-full mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
-                >
-                  Xóa bộ lọc chủ đề
-                </button>
-              )}
-            </div>
           </div>
         </div>
       </div>

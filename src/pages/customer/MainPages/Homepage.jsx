@@ -186,62 +186,64 @@ const Homepage = () => {
     <div className="min-h-screen">
       <CustomerHeader />
 
-      {/* Hero Carousel */}
-      <section className="relative h-96 md:h-[500px] overflow-hidden">
-        {carouselImages.map((slide, index) => (
-          <div
-            key={slide.id}
-            className={`absolute inset-0 transition-transform duration-500 ease-in-out ${index === currentSlide ? 'translate-x-0' :
-              index < currentSlide ? '-translate-x-full' : 'translate-x-full'
-              }`}
-          >
-            <div className="relative w-full h-full">
-              <img
-                src={slide.image}
-                alt={slide.title}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-opacity-50 flex items-center justify-center">
-                <div className="text-center text-white px-4">
-                  <h3 className="text-sm md:text-base font-medium mb-2 bg-orange-500 px-4 py-2 rounded inline-block">
-                    {slide.title}
-                  </h3>
-                  <h1 className="text-3xl md:text-5xl font-bold mb-6 leading-tight">
-                    {slide.subtitle}
-                  </h1>
-                  <button className="bg-white text-gray-800 px-6 py-3 rounded-full font-medium hover:bg-gray-100 transition-colors">
-                    {slide.buttonText}
-                  </button>
+      {/* Hero Carousel - Extended to screen edges */}
+      <section className="py-8 px-4">
+        <div className="relative w-full max-w-6xl mx-auto h-80 md:h-96 overflow-hidden rounded-xl shadow-lg">
+          {carouselImages.map((slide, index) => (
+            <div
+              key={slide.id}
+              className={`absolute inset-0 transition-transform duration-500 ease-in-out ${index === currentSlide ? 'translate-x-0' :
+                index < currentSlide ? '-translate-x-full' : 'translate-x-full'
+                }`}
+            >
+              <div className="relative w-full h-full">
+                <img
+                  src={slide.image}
+                  alt={slide.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center text-white px-8 py-10 bg-opacity-30 rounded-xl backdrop-blur-sm shadow-lg max-w-2xl mx-4">
+                    <h3 className="text-sm md:text-base font-medium mb-2 bg-orange-500 px-4 py-2 rounded inline-block">
+                      {slide.title}
+                    </h3>
+                    <h1 className="text-2xl md:text-4xl font-bold mb-6 leading-tight">
+                      {slide.subtitle}
+                    </h1>
+                    <button className="bg-white text-gray-800 px-6 py-3 rounded-full font-medium hover:bg-gray-100 transition-colors">
+                      {slide.buttonText}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-
-        {/* Navigation Arrows */}
-        <button
-          onClick={prevSlide}
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-20 hover:bg-opacity-30 text-black p-2 rounded-full transition-all"
-        >
-          <ChevronLeft size={24} />
-        </button>
-        <button
-          onClick={nextSlide}
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-20 hover:bg-opacity-30 text-black p-2 rounded-full transition-all"
-        >
-          <ChevronRight size={24} />
-        </button>
-
-        {/* Dots Indicator */}
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {carouselImages.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all ${index === currentSlide ? 'bg-white' : 'bg-white bg-opacity-50'
-                }`}
-            />
           ))}
+
+          {/* Navigation Arrows - Positioned inside carousel */}
+          <button
+            onClick={prevSlide}
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 text-gray-800 p-3 rounded-full transition-all shadow-lg z-10"
+          >
+            <ChevronLeft size={24} />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 text-gray-800 p-3 rounded-full transition-all shadow-lg z-10"
+          >
+            <ChevronRight size={24} />
+          </button>
+
+          {/* Dots Indicator */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+            {carouselImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={`w-3 h-3 rounded-full transition-all ${index === currentSlide ? 'bg-white' : 'bg-white bg-opacity-50'
+                  }`}
+              />
+            ))}
+          </div>
         </div>
       </section>
 
@@ -278,7 +280,7 @@ const Homepage = () => {
 
           {filteredWorkshops.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-white text-opacity-60">Không có workshop nào trong danh mục này.</p>
+              <p className="text-gray-600">Không có workshop nào trong danh mục này.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -334,8 +336,6 @@ const Homepage = () => {
                     >
                       <Eye size={16} />
                       Xem chi tiết
-წ
-
                     </Link>
                   </div>
                 </div>
@@ -354,7 +354,7 @@ const Homepage = () => {
 
           {filteredWorkshops.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-white text-opacity-60">Không có workshop nào trong danh mục này.</p>
+              <p className="text-gray-600">Không có workshop nào trong danh mục này.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -411,7 +411,6 @@ const Homepage = () => {
                       <Eye size={16} />
                       Xem chi tiết
                     </Link>
-
                   </div>
                 </div>
               ))}

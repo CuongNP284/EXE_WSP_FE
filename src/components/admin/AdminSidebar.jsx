@@ -10,7 +10,7 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
     { icon: <Newspaper size={20} />, name: 'Quản lý bài đăng', link: '/bloglist' },
     { icon: <FileBadge size={20} />, name: 'Quản lý danh hiệu', link: '/badgelist' },
     { icon: <Layers size={20} />, name: 'Quản lý danh mục', link: '/categorylist' },
-    { icon: <Users size={20} />, name: 'Đăng nhập', link: '/loginuser' },
+    { icon: <Users size={20} />, name: 'Đăng xuất', link: '/loginuser' },
   ];
 
   return (

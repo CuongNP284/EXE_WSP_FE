@@ -2,64 +2,53 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import CustomerHeader from '../../../components/customer/CustomerHeader';
 import CustomeFooter from '../../../components/customer/CustomeFooter';
-
-// Sample blog data (should match BlogUser, without slug)
-const blogData = [
-  {
-    id: 1,
-    title: "13 ý tưởng cuộc thi và tặng quà trên mạng xã hội dành cho chuyên gia tổ chức sự kiện",
-    readTime: "8 PHÚT ĐỌC",
-    author: "Laura Bennett",
-    date: "10 Tháng 7, 2024",
-    image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-    topics: ["Mạng xã hội", "Marketing"],
-    description: "Khám phá những ý tưởng sáng tạo và hiệu quả để tổ chức các cuộc thi và chương trình tặng quà trên mạng xã hội, giúp tăng cường sự tương tác và mở rộng phạm vi tiếp cận của sự kiện.",
-    content: `
-      <h2>Tại sao các cuộc thi trên mạng xã hội lại quan trọng?</h2>
-      <p>Các cuộc thi và chương trình tặng quà trên mạng xã hội đã trở thành một phần không thể thiếu trong chiến lược marketing hiện đại.</p>
-      <!-- Add full content here -->
-    `,
-  },
-  {
-    id: 2,
-    title: "50+ hashtag sự kiện nên dùng trên TikTok và Instagram",
-    readTime: "10 PHÚT ĐỌC",
-    author: "Laura Bennett",
-    date: "10 Tháng 7, 2024",
-    description: "Tìm hiểu danh sách hơn 50 hashtag hiệu quả để sử dụng trên TikTok và Instagram nhằm tăng cường sự hiện diện của sự kiện trên mạng xã hội.",
-    image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
-    topics: ["Mạng xã hội"],
-    content: `
-      <h2>Giới thiệu về hashtag sự kiện</h2>
-      <p>Hashtag là công cụ mạnh mẽ để tăng khả năng tiếp cận và tương tác trên mạng xã hội.</p>
-      <!-- Add full content -->
-    `,
-  },
-  // Add all 15 blog entries with description and content
-];
+import ApiService from '../../../service/ApiService';
 
 const BlogDetailUser = () => {
-  const { id } = useParams(); // Get id from URL
+  const { id } = useParams(); // Get blogPostId from URL
   const [selectedBlog, setSelectedBlog] = useState(null);
   const [relatedBlogs, setRelatedBlogs] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Find the blog with the matching id
-    const blog = blogData.find(blog => blog.id === parseInt(id));
+    const fetchBlog = async () => {
+      if (!id) {
+        setError('Invalid blog ID');
+        return;
+      }
 
-    if (blog.id) {
-      setSelectedBlog(blog);
+      try {
+        const response = await ApiService.getBlogPostById(id);
+        if (response.status === 200) {
+          // Map API data to include additional fields based on the schema
+          const blog = {
+            ...response.data.data, // Access the 'data' object within the response
+            readTime: `${Math.floor(Math.random() * 12) + 4} PHÚT ĐỌC`, // Placeholder
+            date: new Date(response.data.data.createdAt).toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', year: 'numeric' }),
+            image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg", // Placeholder
+          };
+          setSelectedBlog(blog);
 
-      // Find related blogs (blogs with at least one matching topic, excluding the current blog)
-      const related = blogData
-        .filter(blog => 
-          blog.id !== parseInt(id) && 
-          blog.topics.some(topic => selectedBlog.topics.includes(topic)))
-        .slice(0, 3); // Limit to 3 related blogs
-      setRelatedBlogs(related);
-    } else {
-      setSelectedBlog(null); // Handle case where blog is not found
-    }
+          // Fetch related blogs
+          const allBlogsResponse = await ApiService.getAllBlogPosts({ pageSize: 15, page: 1 });
+          if (allBlogsResponse.status === 200 && allBlogsResponse.data.items) {
+            const mappedRelated = allBlogsResponse.data.items.map(b => ({
+              ...b,
+              readTime: `${Math.floor(Math.random() * 12) + 4} PHÚT ĐỌC`,
+              date: new Date(b.createdAt).toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', year: 'numeric' }),
+              image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
+            })).filter(b => b.blogPostId !== id).slice(0, 3);
+            setRelatedBlogs(mappedRelated);
+          }
+        } else {
+          setError('Failed to fetch blog details');
+        }
+      } catch (err) {
+        console.error('Error fetching blog:', err);
+        setError('Network error or server unavailable');
+      }
+    };
+    fetchBlog();
   }, [id]);
 
   const handleShareClick = (platform) => {
@@ -81,6 +70,21 @@ const BlogDetailUser = () => {
     }
   };
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#FFF8ED] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600">{error}</p>
+          <Link to="/bloguser">
+            <button className="mt-4 px-4 py-2 bg-[#091238] text-white rounded-lg hover:bg-[#0a1a4a] transition-colors duration-300">
+              Quay lại danh sách tin tức
+            </button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   if (!selectedBlog) {
     return (
       <div className="min-h-screen bg-[#FFF8ED] flex items-center justify-center">
@@ -96,19 +100,6 @@ const BlogDetailUser = () => {
     <div className="min-h-screen bg-[#FFF8ED]">
       <CustomerHeader />
       
-      {/* Breadcrumb */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-3">
-          <nav className="text-sm">
-            <span className="text-gray-500">Trang chủ</span>
-            <span className="mx-2 text-gray-400">/</span>
-            <span className="text-gray-500">Tin tức</span>
-            <span className="mx-2 text-gray-400">/</span>
-            <span className="text-[#091238] font-medium">Chi tiết bài viết</span>
-          </nav>
-        </div>
-      </div>
-
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Article Header */}
@@ -129,18 +120,6 @@ const BlogDetailUser = () => {
 
             {/* Article Content */}
             <div className="p-6 md:p-8">
-              {/* Topics */}
-              <div className="mb-4">
-                {selectedBlog.topics.map((topic) => (
-                  <span
-                    key={topic}
-                    className="inline-block bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full mr-2 mb-2"
-                  >
-                    {topic}
-                  </span>
-                ))}
-              </div>
-
               {/* Title */}
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
                 {selectedBlog.title}
@@ -155,12 +134,8 @@ const BlogDetailUser = () => {
               <div className="flex items-center justify-between border-b border-gray-200 pb-6 mb-8">
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center">
-                    <div className="w-10 h-10 bg-[#091238] rounded-full flex items-center justify-center text-white font-semibold">
-                      {selectedBlog.author.charAt(0)}
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-900">{selectedBlog.author}</p>
-                      <p className="text-sm text-gray-500">{selectedBlog.date}</p>
+                    <div>
+                      <p className="text-sm text-gray-500">Ngày đăng bài: {selectedBlog.date}</p>
                     </div>
                   </div>
                 </div>
@@ -202,21 +177,6 @@ const BlogDetailUser = () => {
                   lineHeight: '1.8'
                 }}
               />
-
-              {/* Tags */}
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <div className="flex items-center flex-wrap">
-                  <span className="text-sm font-medium text-gray-600 mr-3">Tags:</span>
-                  {selectedBlog.topics.map((topic) => (
-                    <span
-                      key={topic}
-                      className="inline-block bg-gray-100 text-gray-700 text-sm px-3 py-1 rounded-full mr-2 mb-2 hover:bg-gray-200 cursor-pointer transition-colors"
-                    >
-                      #{topic.replace(' ', '').toLowerCase()}
-                    </span>
-                  ))}
-                </div>
-              </div>
             </div>
           </article>
 
@@ -227,10 +187,10 @@ const BlogDetailUser = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {relatedBlogs.map((blog) => (
                   <div
-                    key={blog.id}
+                    key={blog.blogPostId}
                     className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300"
                   >
-                    <Link to={`/blog/${blog.id}`}>
+                    <Link to={`/blog/${blog.blogPostId}`}>
                       <img
                         src={blog.image}
                         alt={blog.title}
@@ -238,23 +198,12 @@ const BlogDetailUser = () => {
                       />
                     </Link>
                     <div className="p-4">
-                      <div className="mb-2">
-                        {blog.topics.slice(0, 2).map((topic) => (
-                          <span
-                            key={topic}
-                            className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-1 mb-1"
-                          >
-                            {topic}
-                          </span>
-                        ))}
-                      </div>
-                      <Link to={`/blog/${blog.id}`}>
+                      <Link to={`/blog/${blog.blogPostId}`}>
                         <h3 className="text-lg font-semibold mt-2 hover:text-blue-600 transition-colors duration-300 line-clamp-2">
                           {blog.title}
                         </h3>
                       </Link>
                       <div className="flex justify-between items-center mt-3">
-                        <p className="text-sm text-gray-600">Tác giả: {blog.author}</p>
                         <p className="text-sm text-gray-500">{blog.date}</p>
                       </div>
                     </div>

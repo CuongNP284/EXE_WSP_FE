@@ -1,26 +1,22 @@
 import React from 'react';
-import { User, Search, Settings, LogOut } from 'lucide-react';
+import { User, Search } from 'lucide-react';
 import { Dropdown } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
-import ApiService from '../../service/ApiService'; // Adjust the import path as needed
 
 const CustomerHeader = () => {
     const navigate = useNavigate();
+    const isLoggedIn = !!localStorage.getItem('token');
 
-    const handleMenuClick = async ({ key }) => {
+    const handleMenuClick = ({ key }) => {
         switch (key) {
             case 'profile':
                 navigate('/userprofile');
                 break;
             case 'signout':
-                const token = localStorage.getItem('token');
-                if (token) {
-                    const logoutData = { token };
-                    const response = await ApiService.logoutUser(logoutData);
-                    if (response.status === 200) {
-                        navigate('/loginuser');
-                    }
+                if (isLoggedIn) {
+                    localStorage.removeItem('token');
                 }
+                navigate('/loginuser');
                 break;
             default:
                 break;
@@ -36,6 +32,7 @@ const CustomerHeader = () => {
                     <span>Hồ sơ cá nhân</span>
                 </Link>
             ),
+            disabled: !isLoggedIn,
         },
         {
             type: 'divider',
@@ -43,9 +40,9 @@ const CustomerHeader = () => {
         {
             key: 'signout',
             label: (
-                <Link to="#" className="flex items-center space-x-2 px-2 py-1 text-red-600" onClick={(e) => e.preventDefault()}>
-                    <LogOut size={16} />
-                    <span>Đăng xuất</span>
+                <Link to="/loginuser" className="flex items-center space-x-2 px-2 py-1 text-red-600">
+                    <User size={16} />
+                    <span>{isLoggedIn ? 'Đăng xuất' : 'Đăng nhập'}</span>
                 </Link>
             ),
         },
@@ -68,7 +65,7 @@ const CustomerHeader = () => {
                 <Link to="/blog" className="text-gray-600 hover:text-blue-600">Blog</Link>
                 <Link to="/faq" className="text-gray-600 hover:text-blue-600">FAQs</Link>
                 <Link to="/aboutus" className="text-gray-600 hover:text-blue-600">Về chúng tôi</Link>
-                <Link to="/tickets" className="text-gray-600 hover:text-blue-600">Vé của bạn</Link>
+                <Link to="/myworkshop" className="text-gray-600 hover:text-blue-600">Tạo sự kiện</Link>
                 <Dropdown
                     menu={{
                         items,

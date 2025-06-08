@@ -329,11 +329,13 @@ const Homepage = () => {
 
                     {/* Action Button */}
                     <Link
-                      to={`/workshopdetail`}
+                      to={`/workshopdetail/${workshop.id}`}
                       className="w-full bg-[#091238] hover:bg-opacity-90 text-white py-3 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 no-underline"
                     >
                       <Eye size={16} />
                       Xem chi tiết
+წ
+
                     </Link>
                   </div>
                 </div>
@@ -447,7 +449,6 @@ const Homepage = () => {
         </div>
       </section>
 
-
       {/* About Us Section */}
       <section className="py-8 px-4 bg-[#A9C1A6]">
         <div className="max-w-7xl mx-auto">
@@ -476,7 +477,6 @@ const Homepage = () => {
           </div>
         </div>
       </section>
-
 
       <CustomeFooter />
     </div>

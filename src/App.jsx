@@ -1,5 +1,6 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import ProtectedRoute from './service/ProtectedRoute';
 
 // Authentication Import
@@ -50,6 +51,31 @@ import CategoryList from './pages/admin/CategoryList';
 import CategoryCreate from './pages/admin/CategoryCreate';
 import CategoryEdit from './pages/admin/CategoryEdit';
 
+const RestrictedRoute = ({ element, allowedRoles }) => {
+    const navigate = useNavigate();
+    const isLoggedIn = !!localStorage.getItem('token');
+
+    if (!isLoggedIn) {
+        Swal.fire({
+            title: 'Yêu cầu đăng nhập',
+            text: 'Bạn cần đăng nhập để truy cập trang này.',
+            icon: 'warning',
+            confirmButtonText: 'Đăng nhập',
+            showCancelButton: true,
+            cancelButtonText: 'Hủy',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                navigate('/loginuser');
+            } else {
+                navigate('/');
+            }
+        });
+        return null;
+    }
+
+    return <ProtectedRoute element={element} allowedRoles={allowedRoles} />;
+};
+
 const App = () => {
   return (
     <BrowserRouter>
@@ -65,8 +91,8 @@ const App = () => {
         <Route path='/' element={<ProtectedRoute element={<Homepage />} allowedRoles={['USER']} allowGuest={true} />} />
         <Route path='/blog' element={<ProtectedRoute element={<BlogUser />} allowedRoles={['USER']} allowGuest={true} />} />
         <Route path="/blog/:id" element={<ProtectedRoute element={<BlogDetailUser />} allowedRoles={['USER']} allowGuest={true} />} />
-        <Route path='/workshopdetail' element={<ProtectedRoute element={<WorkshopDetail />} allowedRoles={['USER']} allowGuest={true} />} />
-        <Route path='/userprofile' element={<ProtectedRoute element={<UserProfile />} allowedRoles={['USER']} />} />
+        <Route path='/workshopdetail/:id' element={<RestrictedRoute element={<WorkshopDetail />} allowedRoles={['USER']} />} />
+        <Route path='/userprofile' element={<RestrictedRoute element={<UserProfile />} allowedRoles={['USER']} />} />
         <Route path='/aboutus' element={<ProtectedRoute element={<AboutUs />} allowedRoles={['USER']} allowGuest={true} />} />
         <Route path='/legalterms' element={<ProtectedRoute element={<LegalTerms />} allowedRoles={['USER']} allowGuest={true} />} />
         <Route path='/termsofservice' element={<ProtectedRoute element={<TermsOfService />} allowedRoles={['USER']} allowGuest={true} />} />
@@ -100,7 +126,6 @@ const App = () => {
         <Route path='/categorylist' element={<ProtectedRoute element={<CategoryList />} allowedRoles={['ADMIN']} />} />
         <Route path='/categorycreate' element={<ProtectedRoute element={<CategoryCreate />} allowedRoles={['ADMIN']} />} />
         <Route path='/categoryedit/:id' element={<ProtectedRoute element={<CategoryEdit />} allowedRoles={['ADMIN']} />} />
-
       </Routes>
     </BrowserRouter>
   );

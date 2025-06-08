@@ -1,21 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, ChevronRight, ChevronLeft, Users, ClipboardCheck, Newspaper, BarChart2, LogOut, FileBadge, Layers } from 'lucide-react';
-import ApiService from '../../service/ApiService'; // Adjust the import path as needed
+import { Menu, ChevronRight, ChevronLeft, Users, ClipboardCheck, Newspaper, BarChart2, FileBadge, Layers } from 'lucide-react';
 
-// Sidebar Component
 const AdminSidebar = ({ isOpen, toggleSidebar }) => {
-  const handleLogout = async () => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const logoutData = { token };
-      const response = await ApiService.logoutUser(logoutData);
-      if (response.status === 200) {
-        window.location.href = '/loginuser'; // Redirect to login page
-      }
-    }
-  };
-
   const menuItems = [
     { icon: <BarChart2 size={20} />, name: 'Bảng thống kê', link: '/admindashboard'},
     { icon: <ClipboardCheck size={20} />, name: 'Quản lý yêu cầu', link: '/requestlist' },
@@ -23,7 +10,7 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
     { icon: <Newspaper size={20} />, name: 'Quản lý bài đăng', link: '/bloglist' },
     { icon: <FileBadge size={20} />, name: 'Quản lý danh hiệu', link: '/badgelist' },
     { icon: <Layers size={20} />, name: 'Quản lý danh mục', link: '/categorylist' },
-    { icon: <LogOut size={20} />, name: 'Đăng xuất', link: '#', onClick: handleLogout },
+    { icon: <Users size={20} />, name: 'Đăng nhập', link: '/loginuser' },
   ];
 
   return (
@@ -56,7 +43,6 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
             className={`flex items-center py-3 px-4 cursor-pointer hover:bg-gray-700 no-underline ${
               item.active ? 'bg-gray-700' : ''
             }`}
-            onClick={item.onClick}
           >
             <div className={isOpen ? '' : 'mx-auto'}>
               {item.icon}

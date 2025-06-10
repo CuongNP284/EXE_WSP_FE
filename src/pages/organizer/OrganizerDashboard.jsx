@@ -1,18 +1,47 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react';
 import OrganizerSidebar from '../../components/organizer/OrganizerSidebar';
 import OrganizerHeader from '../../components/organizer/OrganizerHeader';
-import { Card, Table, Progress, Tag, Select, DatePicker, Row, Col } from 'antd';
+import { Card, Table, Progress, Tag, Select, DatePicker, Row, Col, message } from 'antd';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 import { TrendingUp, Users, Calendar, DollarSign, Award, Eye } from 'lucide-react';
+import ApiService from '../../service/ApiService'; // Import ApiService
+
+const { RangePicker } = DatePicker;
 
 const OrganizerDashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [statsData, setStatsData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchOrganizerAnalytics = async () => {
+            setLoading(true);
+            try {
+                const response = await ApiService.getOrganizerAnalytics();
+                if (response.status === 200 && response.data) {
+                    const data = response.data.data;
+                    setStatsData([
+                        { title: 'Tổng Vé Đã Mua', value: data.totalTicketBoughtForOwnWorkshop || 0, icon: <Calendar />, color: '#1890ff' },
+                        { title: 'Tổng Doanh Thu', value: data.revenue || 0, prefix: '₫', icon: <DollarSign />, color: '#faad14' },
+                        { title: 'Đánh Giá Gần Nhất', value: data.currentReview ? `${data.currentReview.rating}/5 - ${data.currentReview.comment}` : 'N/A', icon: <Award />, color: '#52c41a' },
+                        { title: 'Workshop Đánh Giá Cao Nhất', value: data.bestRatingWorkshop ? data.bestRatingWorkshop.title : 'N/A', icon: <Eye />, color: '#f5222d' }
+                    ]);
+                }
+            } catch (error) {
+                message.error('Failed to fetch organizer analytics');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchOrganizerAnalytics();
+    }, []);
 
     const toggleSidebar = () => {
         setSidebarOpen(!sidebarOpen);
     };
 
-    // Mock data for charts
+    // Mock data for charts (can be replaced with API data later)
     const monthlyRevenueData = [
         { month: 'Jan', revenue: 12000000, workshops: 15, participants: 450 },
         { month: 'Feb', revenue: 18000000, workshops: 22, participants: 660 },
@@ -157,51 +186,28 @@ const OrganizerDashboard = () => {
                 <OrganizerHeader />
                 <main className="flex-1 overflow-y-auto">
                     <div className="p-6">
-                        {/* Stats Cards */}
                         <Row gutter={[16, 16]} className="mb-6">
-                            <Col xs={24} sm={12} lg={6}>
-                                <Card className="text-center">
-                                    <div className="flex items-center justify-center mb-2">
-                                        <Calendar className="w-8 h-8 text-blue-500" />
-                                    </div>
-                                    <div className="text-2xl font-bold text-gray-800">142</div>
-                                    <div className="text-sm text-gray-500">Total Workshops</div>
-                                    <div className="text-xs text-green-500 mt-1">+12% từ tháng trước</div>
-                                </Card>
-                            </Col>
-                            <Col xs={24} sm={12} lg={6}>
-                                <Card className="text-center">
-                                    <div className="flex items-center justify-center mb-2">
-                                        <Users className="w-8 h-8 text-green-500" />
-                                    </div>
-                                    <div className="text-2xl font-bold text-gray-800">4,865</div>
-                                    <div className="text-sm text-gray-500">Total Participants</div>
-                                    <div className="text-xs text-green-500 mt-1">+18% từ tháng trước</div>
-                                </Card>
-                            </Col>
-                            <Col xs={24} sm={12} lg={6}>
-                                <Card className="text-center">
-                                    <div className="flex items-center justify-center mb-2">
-                                        <DollarSign className="w-8 h-8 text-yellow-500" />
-                                    </div>
-                                    <div className="text-2xl font-bold text-gray-800">135M</div>
-                                    <div className="text-sm text-gray-500">Total Revenue (VND)</div>
-                                    <div className="text-xs text-green-500 mt-1">+25% từ tháng trước</div>
-                                </Card>
-                            </Col>
-                            <Col xs={24} sm={12} lg={6}>
-                                <Card className="text-center">
-                                    <div className="flex items-center justify-center mb-2">
-                                        <Award className="w-8 h-8 text-purple-500" />
-                                    </div>
-                                    <div className="text-2xl font-bold text-gray-800">4.7</div>
-                                    <div className="text-sm text-gray-500">Average Rating</div>
-                                    <div className="text-xs text-green-500 mt-1">+0.2 từ tháng trước</div>
-                                </Card>
-                            </Col>
+                            {loading ? (
+                                <Col xs={24}>
+                                    <Card loading={true} />
+                                </Col>
+                            ) : (
+                                statsData.map((stat, index) => (
+                                    <Col xs={24} sm={12} lg={6} key={index}>
+                                        <Card className="text-center">
+                                            <div className="flex items-center justify-center mb-2">
+                                                {stat.icon && React.cloneElement(stat.icon, { className: `w-8 h-8 ${stat.color.replace('#', 'text-')}` })}
+                                            </div>
+                                            <div className="text-2xl font-bold text-gray-800">{stat.value}</div>
+                                            <div className="text-sm text-gray-500">{stat.title}</div>
+                                            <div className="text-xs text-green-500 mt-1">+10% từ tháng trước</div> {/* Mocked growth */}
+                                        </Card>
+                                    </Col>
+                                ))
+                            )}
                         </Row>
 
-                        {/* Charts Row */}
+                        {/* Charts and other sections remain unchanged */}
                         <Row gutter={[16, 16]} className="mb-6">
                             <Col xs={24} lg={16}>
                                 <Card title="Doanh thu theo tháng" className="h-96">

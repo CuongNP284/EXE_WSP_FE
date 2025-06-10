@@ -30,8 +30,8 @@ const UserList = () => {
                 const items = response.data.data?.items || response.data.items || [];
                 const total = response.data.data?.count || response.data.totalItems || 0;
 
-                // Filter out admin users (role === 0)
-                const filteredItems = items.filter(user => user.role !== 0);
+                // Filter out admin users (role === 0) and organizer users (role === 1 or as per your role mapping)
+                const filteredItems = items.filter(user => user.role !== 0 && user.role !== 2);
 
                 const formattedUsers = filteredItems.map(user => ({
                     id: user.id || '',
@@ -41,7 +41,7 @@ const UserList = () => {
                     phoneNumber: user.phoneNumber || 'Chưa có',
                     achievementPoint: user.achievementPoint ?? 0,
                     status: user.status === 1 ? 'active' : 'banned',
-                    role: ApiService.mapRoleIdToName(user.role || 2).toLowerCase(),
+                    role: 'user', // Default to 'user' since organizers are filtered out
                 }));
 
                 setUsers(formattedUsers);
@@ -125,19 +125,7 @@ const UserList = () => {
             title: 'Vai trò',
             dataIndex: 'role',
             key: 'role',
-            render: (role) => {
-                const roleConfig = {
-                    organizer: { color: 'blue', text: 'Tổ chức viên' },
-                    user: { color: 'default', text: 'Người dùng' },
-                };
-                const config = roleConfig[role] || roleConfig.user;
-                return <Tag color={config.color}>{config.text}</Tag>;
-            },
-            filters: [
-                { text: 'Tổ chức viên', value: 'organizer' },
-                { text: 'Người dùng', value: 'user' },
-            ],
-            onFilter: (value, record) => record.role === value,
+            render: () => <Tag color="default">Người dùng</Tag>,
         },
         {
             title: 'Trạng thái',

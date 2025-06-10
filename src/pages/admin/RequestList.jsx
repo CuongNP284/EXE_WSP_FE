@@ -32,21 +32,41 @@ const RequestList = () => {
                 const items = response.data.data?.items || response.data.items || [];
                 const total = response.data.data?.count || response.data.totalItems || 0;
                 // Map API response to the expected format
-                const formattedRequests = items.map(workshop => ({
-                    id: workshop.id,
-                    name: workshop.title,
-                    description: workshop.description,
-                    image: workshop.image || "https://via.placeholder.com/800x400", // Fallback image if not provided
-                    submittedDate: workshop.createdAt,
-                    reviewDate: workshop.updatedAt || "",
-                    date: workshop.startDate,
-                    time: `${new Date(workshop.startDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - ${new Date(workshop.endDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`,
-                    location: workshop.location,
-                    status: workshop.status,
-                    price: `${workshop.price.toLocaleString('vi-VN')} VNĐ`,
-                    organizer: workshop.organizerName || "Unknown Organizer",
-                    category: workshop.categoryName || "Uncategorized",
-                    reviewNotes: workshop.reviewNotes || ""
+                const formattedRequests = await Promise.all(items.map(async (workshop) => {
+                    // Fetch category name
+                    let categoryName = 'Uncategorized';
+                    if (workshop.categoryId) {
+                        const categoryResponse = await ApiService.getCategoryById(workshop.categoryId);
+                        if (categoryResponse.status === 200 && categoryResponse.data?.data?.name) {
+                            categoryName = categoryResponse.data.data.name;
+                        }
+                    }
+                    // Fetch organizer name
+                    let organizerName = 'Unknown Organizer';
+                    if (workshop.organizerId) {
+                        const organizerResponse = await ApiService.getUserById(workshop.organizerId);
+                        if (organizerResponse.status === 200 && organizerResponse.data?.data?.name) {
+                            organizerName = organizerResponse.data.data.name;
+                        }
+                    }
+                    return {
+                        id: workshop.workshopId,
+                        name: workshop.title,
+                        description: workshop.description,
+                        image: workshop.image || "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                        submittedDate: workshop.createdAt,
+                        reviewDate: workshop.updatedAt || "",
+                        date: workshop.startDate || new Date(workshop.createdAt).toISOString(),
+                        time: workshop.startDate && workshop.endDate
+                            ? `${new Date(workshop.startDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - ${new Date(workshop.endDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
+                            : 'N/A',
+                        location: workshop.location,
+                        status: workshop.status === 0 ? 'pending' : workshop.status === 1 ? 'approved' : 'rejected',
+                        price: `${workshop.price.toLocaleString('vi-VN')} VNĐ`,
+                        organizer: organizerName,
+                        category: categoryName,
+                        reviewNotes: workshop.reviewNotes || ""
+                    };
                 }));
                 setWorkshopRequests(formattedRequests);
                 setTotalItems(total);

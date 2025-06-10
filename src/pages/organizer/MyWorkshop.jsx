@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Pagination, Empty, message } from 'antd';
+import { Pagination, Empty } from 'antd';
+import Swal from 'sweetalert2';
 import OrganizerSidebar from '../../components/organizer/OrganizerSidebar';
 import OrganizerHeader from '../../components/organizer/OrganizerHeader';
 import { MapPin, Users, Eye, Edit, Trash2, Plus } from 'lucide-react';
@@ -16,30 +17,48 @@ const MyWorkshop = () => {
         const fetchWorkshops = async () => {
             const response = await ApiService.getWorkshopsForOrganizer();
             if (response.status === 200) {
-                setWorkshops(response.data.data || []);
+                setWorkshops(response.data.data.items || []);
             } else {
-                message.error('Failed to fetch workshops');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Failed to fetch workshops',
+                });
             }
         };
         fetchWorkshops();
     }, []);
 
-    const toggleSidebar = () => {
-        setSidebarOpen(!sidebarOpen);
-    };
-
     const handleDelete = async (workshopId) => {
-        if (window.confirm('Are you sure you want to delete this workshop?')) {
+        const result = await Swal.fire({
+            title: 'Xác nhận xóa',
+            text: 'Bạn có chắc chắn muốn xóa workshop này không?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Xác nhận',
+            cancelButtonText: 'Hủy',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+        });
+
+        if (result.isConfirmed) {
             const response = await ApiService.deleteWorkshop(workshopId);
             if (response.status === 200) {
-                message.success('Workshop deleted successfully');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: 'Workshop deleted successfully',
+                });
                 setWorkshops(workshops.filter(w => w.id !== workshopId));
             } else {
-                message.error(response.message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: response.message || 'Failed to delete workshop',
+                });
             }
         }
     };
-
     const getStatusColor = (status) => {
         switch (status) {
             case 'active':
@@ -64,6 +83,10 @@ const MyWorkshop = () => {
             default:
                 return 'Unknown';
         }
+    };
+
+    const toggleSidebar = () => {
+        setSidebarOpen(!sidebarOpen);
     };
 
     const indexOfLastItem = currentPage * itemsPerPage;
@@ -108,10 +131,10 @@ const MyWorkshop = () => {
                         <>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {currentWorkshops.map((workshop) => (
-                                    <div key={workshop.id} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+                                    <div key={workshop.workshopId} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
                                         <div className="relative">
                                             <img
-                                                src="https://via.placeholder.com/300x200"
+                                                src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                                                 alt={workshop.title}
                                                 className="w-full h-48 object-cover rounded-t-lg"
                                             />
@@ -149,15 +172,12 @@ const MyWorkshop = () => {
                                             </div>
 
                                             <div className="flex space-x-2">
-                                                <Link to={`/workshopdetail/${workshop.id}`} className="flex-1 bg-[#091238] hover:bg-gray-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 no-underline">
+                                                <Link to={`/workshopdetail/${workshop.workshopId}`} className="flex-1 bg-[#091238] hover:bg-gray-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 no-underline">
                                                     <Eye size={16} />
                                                     View Details
                                                 </Link>
-                                                <Link to={`/editworkshop/${workshop.id}`} className="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg transition-colors no-underline">
-                                                    <Edit size={16} />
-                                                </Link>
-                                                <button 
-                                                    onClick={() => handleDelete(workshop.id)}
+                                                <button
+                                                    onClick={() => handleDelete(workshop.workshopId)}
                                                     className="bg-red-100 hover:bg-red-200 text-red-600 py-2 px-3 rounded-lg transition-colors"
                                                 >
                                                     <Trash2 size={16} />

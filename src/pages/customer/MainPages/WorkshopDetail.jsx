@@ -1,33 +1,19 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { Calendar, Clock, MapPin, Users, Eye, Star, Phone, Mail, ArrowLeft } from 'lucide-react';
 import CustomerHeader from '../../../components/customer/CustomerHeader';
 import CustomeFooter from '../../../components/customer/CustomeFooter';
+import ApiService from '../../../service/ApiService';
+import { message } from 'antd';
 
 const WorkshopDetail = () => {
+    const { workshopId } = useParams();
+    const [workshop, setWorkshop] = useState(null);
+    const [organizer, setOrganizer] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState('2024-03-09');
 
-    // Main workshop data
-    const workshop = {
-        id: 1,
-        name: "TRỊ LIỆU CHUỖNG XOAY",
-        subtitle: "Sức nóng lướp nướng con tốn số nừng dong pain thú",
-        organizer: "Turny House",
-        location: "128/37A Lê Văn Duyệt, Bình Thạnh",
-        phone: "0946845864",
-        email: "turnyhouse075@gmail.com",
-        image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        price: "500,000 VNĐ",
-        status: "OFFLINE",
-        description: "Thời gian: 90-120 phút/session\nĐịa điểm: 128/37A Lê Văn Duyệt, Bình Thạnh, TP HCM\nHình thức: Offline    Thẻ tag: #Tình thần #Sức khỏe\n\nGIỚI THIỆU\nÂm thanh chính trị tính hào của Vũ Thu có thể thể hiện đúng như tôi chặt và tim mình không nói dạ ách này này ra. Thực hành đồng thỏng trả lọt như phạm đó cùng mùng đám tỏ và sự công toàn mạnh mẽ để táng. Kèm đó với toàn bộ hỗ trợ thông quan cũ đã đoàn gô về phải bảo kèm theo di các đa thành phần và toần. Đác số nhà chỗ cần như vết nặng cao tốn số ứng dụng.",
-        availableDates: [
-            { date: '2024-03-09', time: '14h00 - 16h30', day: 'Thứ 2' },
-            { date: '2024-03-12', time: '14h00 - 16h30', day: 'Thứ 4' },
-            { date: '2024-03-14', time: '14h00 - 16h30', day: 'Thứ 6' }
-        ]
-    };
-
-    // Reviews data
+    // Hardcoded reviews and similar workshops (no API provided)
     const reviews = [
         {
             id: 1,
@@ -45,7 +31,6 @@ const WorkshopDetail = () => {
         }
     ];
 
-    // Similar workshops (excluding the pink design thinking one)
     const similarWorkshops = [
         {
             id: 1,
@@ -77,10 +62,94 @@ const WorkshopDetail = () => {
         }
     ];
 
+    // Hardcoded available dates (no API provided)
+    const availableDates = [
+        { date: '2024-03-09', time: '14h00 - 16h30', day: 'Thứ 2' },
+        { date: '2024-03-12', time: '14h00 - 16h30', day: 'Thứ 4' },
+        { date: '2024-03-14', time: '14h00 - 16h30', day: 'Thứ 6' }
+    ];
+
+    // Map status code to display text
+    const mapStatusToDisplay = (status) => {
+        switch (status) {
+            case 0: return 'OFFLINE';
+            case 1: return 'ONLINE';
+            default: return 'UNKNOWN';
+        }
+    };
+
+    // Fetch workshop and organizer details
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                // Fetch workshop details
+                const res = await ApiService.getWorkshopById(workshopId);
+                const workshopData = res?.data?.data;
+
+                if (!res || res.status !== 200 || !workshopData) {
+                    message.error('Không thể tải chi tiết workshop.');
+                    setLoading(false);
+                    return;
+                }
+
+                // Map status and add hardcoded available dates
+                const mappedWorkshop = {
+                    ...workshopData,
+                    status: mapStatusToDisplay(workshopData.status),
+                    availableDates
+                };
+                setWorkshop(mappedWorkshop);
+
+                // Optionally fetch organizer (commented out to avoid error)
+                /* const organizerId = workshopData.organizerId;
+                if (organizerId) {
+                    const orgRes = await ApiService.getUserById(organizerId);
+                    const organizerData = orgRes?.data?.data;
+                    if (orgRes && orgRes.status === 200 && organizerData) {
+                        setOrganizer(organizerData);
+                    } else {
+                        message.warning('Không thể tải thông tin người tổ chức.');
+                        setOrganizer(null);
+                    }
+                } */
+                setOrganizer({ firstName: 'Unknown', lastName: 'Organizer', email: 'contact@example.com', phoneNumber: '090-123-4567' }); // Fallback data
+            } catch (err) {
+                console.error('Lỗi khi tải dữ liệu workshop:', err);
+                message.error('Đã xảy ra lỗi trong quá trình tải dữ liệu.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (workshopId) {
+            fetchData();
+        } else {
+            message.error('Không tìm thấy ID workshop.');
+            setLoading(false);
+        }
+    }, [workshopId]);
+
     const formatDate = (dateStr) => {
         const date = new Date(dateStr);
         return date.toLocaleDateString('vi-VN');
     };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-gray-600">Đang tải...</div>
+            </div>
+        );
+    }
+
+    if (!workshop) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-gray-600">Không thể tải thông tin workshop.</div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen">
@@ -93,8 +162,8 @@ const WorkshopDetail = () => {
                         {/* Workshop Image */}
                         <div className="relative mb-6">
                             <img
-                                src={workshop.image}
-                                alt={workshop.name}
+                                src={workshop.image || 'https://thienanagency.com/photos/all/khac/workshop-painting.jpg'}
+                                alt={workshop.title}
                                 className="w-full h-64 md:h-80 object-cover rounded-lg"
                             />
                             <div className="absolute top-4 right-4">
@@ -106,9 +175,9 @@ const WorkshopDetail = () => {
 
                         {/* Workshop Title */}
                         <div className="mb-6">
-                            <h1 className="text-3xl font-bold text-gray-900 mb-2">{workshop.name}</h1>
-                            <p className="text-gray-600 text-lg">{workshop.subtitle}</p>
-                            <p className="text-sm text-gray-500 mt-1">Nhà tổ chức: {workshop.organizer}</p>
+                            <h1 className="text-3xl font-bold text-gray-900 mb-2">{workshop.title}</h1>
+                            <p className="text-gray-600 text-lg">{workshop.description}</p>
+                            <p className="text-sm text-gray-500 mt-1">Nhà tổ chức: {organizer ? `${organizer.firstName} ${organizer.lastName}` : 'Unknown Organizer'}</p>
                         </div>
 
                         {/* Workshop Details */}
@@ -122,20 +191,24 @@ const WorkshopDetail = () => {
                                         <p className="text-gray-600">{workshop.location}</p>
                                     </div>
                                 </div>
-                                <div className="flex items-start">
-                                    <Phone size={20} className="text-gray-400 mr-3 mt-1" />
-                                    <div>
-                                        <p className="font-medium text-gray-900">Số điện thoại</p>
-                                        <p className="text-gray-600">{workshop.phone}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start">
-                                    <Mail size={20} className="text-gray-400 mr-3 mt-1" />
-                                    <div>
-                                        <p className="font-medium text-gray-900">Email</p>
-                                        <p className="text-gray-600">{workshop.email}</p>
-                                    </div>
-                                </div>
+                                {organizer && (
+                                    <>
+                                        <div className="flex items-start">
+                                            <Phone size={20} className="text-gray-400 mr-3 mt-1" />
+                                            <div>
+                                                <p className="font-medium text-gray-900">Số điện thoại</p>
+                                                <p className="text-gray-600">{organizer.phoneNumber}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start">
+                                            <Mail size={20} className="text-gray-400 mr-3 mt-1" />
+                                            <div>
+                                                <p className="font-medium text-gray-900">Email</p>
+                                                <p className="text-gray-600">{organizer.email}</p>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
 
@@ -147,7 +220,7 @@ const WorkshopDetail = () => {
                             </div>
                         </div>
 
-                        {/* Schedule Card - Moved here */}
+                        {/* Schedule Card */}
                         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                             <h3 className="text-xl font-semibold text-gray-900 mb-4">LỊCH CHI TIẾT</h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -196,27 +269,24 @@ const WorkshopDetail = () => {
                         </div>
                     </div>
 
-                    {/* Sidebar - Fixed pricing card only */}
+                    {/* Sidebar - Fixed pricing card */}
                     <div className="lg:col-span-1">
-                        {/* Booking Card - Now fixed/sticky */}
                         <div className="bg-[#091238] text-white rounded-lg p-6 sticky top-4">
                             <h3 className="text-lg font-semibold mb-4">Thông tin vé</h3>
-
                             <div className="mb-4">
-                                <h4 className="text-xl font-bold mb-2">{workshop.name}</h4>
-                                <p className="text-sm opacity-80 mb-1">Nhà tổ chức: {workshop.organizer}</p>
+                                <h4 className="text-xl font-bold mb-2">{workshop.title}</h4>
+                                <p className="text-sm opacity-80 mb-1">Nhà tổ chức: {organizer ? `${organizer.firstName} ${organizer.lastName}` : 'Unknown Organizer'}</p>
                                 <div className="flex items-center text-sm opacity-80 mb-2">
                                     <MapPin size={14} className="mr-1" />
                                     <span>{workshop.location}</span>
                                 </div>
                                 <div className="flex items-center text-sm opacity-80">
                                     <Calendar size={14} className="mr-1" />
-                                    <span>Thứ 2, 09/03 vé từ ngày khác</span>
+                                    <span>{formatDate(workshop.createdAt)}</span>
                                 </div>
                             </div>
-
                             <div className="mb-6">
-                                <div className="text-2xl font-bold mb-2">Giá từ: {workshop.price}</div>
+                                <div className="text-2xl font-bold mb-2">Giá từ: {workshop.price.toLocaleString('vi-VN')} VNĐ</div>
                                 <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg font-medium transition-colors">
                                     ĐẶT VÉ NGAY
                                 </button>
@@ -229,11 +299,9 @@ const WorkshopDetail = () => {
                 <div className="mt-12">
                     <h2 className="text-2xl font-bold text-gray-900 mb-8">WORKSHOP BẠN CÓ THỂ THÍCH</h2>
                     <p className="text-gray-600 mb-6">Dựa trên thể loại workshop bạn đang xem</p>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {similarWorkshops.map((workshop) => (
                             <div key={workshop.id} className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
-                                {/* Workshop Image */}
                                 <div className="relative">
                                     <img
                                         src={workshop.image}
@@ -241,8 +309,6 @@ const WorkshopDetail = () => {
                                         className="w-full h-48 object-cover"
                                     />
                                 </div>
-
-                                {/* Workshop Content */}
                                 <div className="p-6">
                                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
                                         {workshop.name}
@@ -250,20 +316,16 @@ const WorkshopDetail = () => {
                                     <p className="text-gray-600 text-sm mb-4">
                                         {workshop.description}
                                     </p>
-
-                                    {/* Workshop Details */}
                                     <div className="space-y-2 mb-4">
                                         <div className="flex items-center text-sm text-gray-600">
-                                            <Calendar size={16} className="mr-2 text-gray-400" />
+                                            <Calendar size={16} className="mr-2 text-gray-700" />
                                             <span>{workshop.date}</span>
                                         </div>
                                         <div className="flex items-center text-sm text-gray-600">
-                                            <MapPin size={16} className="mr-2 text-gray-400" />
+                                            <MapPin size={16} className="mr-2 text-gray-700" />
                                             <span className="line-clamp-1">{workshop.location}</span>
                                         </div>
                                     </div>
-
-                                    {/* Price */}
                                     <div className="mb-4">
                                         <div className="flex items-center space-x-2">
                                             <span className="text-lg font-bold text-[#091238]">{workshop.price}</span>
@@ -272,8 +334,6 @@ const WorkshopDetail = () => {
                                             )}
                                         </div>
                                     </div>
-
-                                    {/* Action Button */}
                                     <Link
                                         to={`/workshopdetail`}
                                         className="w-full bg-[#091238] hover:bg-opacity-90 text-white py-3 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 no-underline"
@@ -287,6 +347,7 @@ const WorkshopDetail = () => {
                     </div>
                 </div>
             </div>
+
             <CustomeFooter />
         </div>
     );

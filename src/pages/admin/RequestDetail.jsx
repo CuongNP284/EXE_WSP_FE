@@ -1,63 +1,150 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import AdminHeader from '../../components/admin/AdminHeader';
-import { Popconfirm, message } from 'antd';
-import { Calendar, Clock, MapPin, Users, DollarSign, CheckCircle, XCircle } from 'lucide-react';
+import Swal from 'sweetalert2';
+import { Calendar, Clock, MapPin, Users, DollarSign, CheckCircle } from 'lucide-react';
+import ApiService from '../../service/ApiService';
 
 const RequestDetail = () => {
+    const { workshopId } = useParams();
+    const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [isApproving, setIsApproving] = useState(false);
-    const [isRejecting, setIsRejecting] = useState(false);
+    const [workshopData, setWorkshopData] = useState(null);
+    const [categoryName, setCategoryName] = useState('Uncategorized');
+    const [organizerName, setOrganizerName] = useState('Unknown Organizer');
+    const [organizerEmail, setOrganizerEmail] = useState('N/A');
+
+    useEffect(() => {
+        fetchWorkshopDetails();
+    }, [workshopId]);
+
+    const fetchWorkshopDetails = async () => {
+        try {
+            const response = await ApiService.getWorkshopById(workshopId);
+            if (response.status === 200 && response.data?.data) {
+                const workshop = response.data.data;
+                setWorkshopData({
+                    workshopId: workshop.workshopId,
+                    title: workshop.title,
+                    description: workshop.description,
+                    date: new Date(workshop.createdAt).toLocaleDateString('vi-VN'),
+                    startTime: workshop.startTime || 'N/A',
+                    endTime: workshop.endTime || 'N/A',
+                    location: workshop.location,
+                    participants: workshop.maxParticipants ? `${workshop.currentParticipants || 0}/${workshop.maxParticipants} người tham gia` : 'N/A',
+                    price: `${workshop.price.toLocaleString('vi-VN')} VND`,
+                    image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+                    eventDate: new Date(workshop.createdAt).toLocaleDateString('vi-VN'),
+                    startTimeDetail: workshop.startTime ? new Date(workshop.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
+                    endTimeDetail: workshop.endTime ? new Date(workshop.endTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
+                    maxParticipants: workshop.maxParticipants || 'N/A',
+                    ticketTypes: workshop.ticketTypes || [
+                        { name: "Standard Ticket", price: workshop.price.toString() }
+                    ],
+                    status: workshop.status === 0 ? 'Đang chờ duyệt' : workshop.status === 1 ? 'Đã phê duyệt' : 'Bị từ chối',
+                    organizerId: workshop.organizerId,
+                    categoryId: workshop.categoryId,
+                    introVideoUrl: workshop.introVideoUrl,
+                    submittedDate: new Date(workshop.createdAt).toLocaleDateString('vi-VN'),
+                    durationMinutes: workshop.durationMinutes
+                });
+
+                // Fetch category name
+                if (workshop.categoryId) {
+                    const categoryResponse = await ApiService.getCategoryById(workshop.categoryId);
+                    if (categoryResponse.status === 200 && categoryResponse.data?.data?.name) {
+                        setCategoryName(categoryResponse.data.data.name);
+                    }
+                }
+
+                // Fetch organizer details
+                if (workshop.organizerId) {
+                    try {
+                        const organizerResponse = await ApiService.getUserById(workshop.organizerId);
+                        if (organizerResponse.status === 200 && organizerResponse.data?.data) {
+                            const user = organizerResponse.data.data;
+                            setOrganizerName(`${user.firstName} ${user.lastName}` || 'Unknown Organizer');
+                            setOrganizerEmail(user.email || 'N/A');
+                        }
+                    } catch (err) {
+                        console.error('Lỗi khi fetch organizer info:', err);
+                    }
+                }
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Không thể tải chi tiết workshop',
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching workshop details:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Lỗi khi tải chi tiết workshop',
+            });
+        }
+    };
 
     const toggleSidebar = () => {
         setSidebarOpen(!sidebarOpen);
     };
 
-    // Mock workshop data
-    const workshopData = {
-        title: "Luyện tập thân khỏe với Yoga",
-        description: "Khóa học yoga cơ bản dành cho người mới bắt đầu, giúp bạn thư giãn và tăng cường sức khỏe.",
-        date: "15/6/2024",
-        startTime: "09:00",
-        endTime: "11:00",
-        location: "Phòng tập Yoga Center, Quận 1",
-        participants: "25/30 người tham gia",
-        price: "500,000 VND",
-        image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-        eventDate: "06/01/2025",
-        startTimeDetail: "09:00 AM",
-        endTimeDetail: "12:00 PM",
-        maxParticipants: 50,
-        ticketTypes: [
-            { name: "Standard Ticket", price: "100000" },
-            { name: "VIP Ticket", price: "200000" }
-        ],
-        status: "Đang chờ duyệt",
-        organizer: "Yoga Center Saigon",
-        organizerEmail: "info@yogacenter.com",
-        submittedDate: "20/12/2024"
+    const handleApprove = async () => {
+        const result = await Swal.fire({
+            title: 'Duyệt workshop',
+            text: 'Bạn có chắc chắn muốn duyệt workshop này không?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Xác nhận',
+            cancelButtonText: 'Hủy',
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#dc3545',
+        });
+
+        if (result.isConfirmed) {
+            setIsApproving(true);
+            try {
+                const response = await ApiService.approveWorkshop(workshopId);
+                if (response.status === 200) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công',
+                        text: 'Workshop đã được duyệt thành công!',
+                    });
+                    setWorkshopData(prev => ({
+                        ...prev,
+                        status: response.data?.status || 'Đã phê duyệt'
+                    }));
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: response.message || 'Không thể duyệt workshop',
+                    });
+                }
+            } catch (error) {
+                console.error('Error approving workshop:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Lỗi khi duyệt workshop',
+                });
+            } finally {
+                setIsApproving(false);
+            }
+        }
     };
 
-    const handleApprove = () => {
-        setIsApproving(true);
-        // Simulate API call
-        setTimeout(() => {
-            message.success('Workshop đã được duyệt thành công!');
-            setIsApproving(false);
-        }, 1500);
-    };
-
-    const handleReject = () => {
-        setIsRejecting(true);
-        // Simulate API call
-        setTimeout(() => {
-            message.success('Workshop đã bị từ chối!');
-            setIsRejecting(false);
-        }, 1500);
-    };
+    if (!workshopData) {
+        return <div>Loading...</div>;
+    }
 
     return (
-        <div className="flex h-screen bg-gray-50">
+        <div className="flex h-screen">
             <AdminSidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
             <div className="flex flex-col flex-1 overflow-hidden">
                 <AdminHeader />
@@ -73,8 +160,8 @@ const RequestDetail = () => {
                                     className="w-full h-full object-cover"
                                 />
                                 <div className="absolute top-4 right-4">
-                                    <span className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                                        Chờ duyệt
+                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${workshopData.status === 'Đã phê duyệt' ? 'bg-green-500 text-white' : workshopData.status === 'Bị từ chối' ? 'bg-red-500 text-white' : 'bg-yellow-500 text-white'}`}>
+                                        {workshopData.status}
                                     </span>
                                 </div>
                             </div>
@@ -87,7 +174,7 @@ const RequestDetail = () => {
                                     {workshopData.description}
                                 </p>
                                 <div className="mt-4 flex items-center space-x-4 text-sm text-gray-500">
-                                    <span>Người tổ chức: <strong>{workshopData.organizer}</strong></span>
+                                    <span>Người tổ chức: <strong>{organizerName}</strong></span>
                                     <span>Ngày gửi: <strong>{workshopData.submittedDate}</strong></span>
                                 </div>
                             </div>
@@ -117,6 +204,14 @@ const RequestDetail = () => {
                                     </div>
 
                                     <div className="flex items-center space-x-3">
+                                        <Clock className="w-5 h-5 text-green-500" />
+                                        <div>
+                                            <span className="text-sm text-gray-500">Thời lượng</span>
+                                            <p className="font-medium">{workshopData.durationMinutes} phút</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center space-x-3">
                                         <MapPin className="w-5 h-5 text-red-500" />
                                         <div>
                                             <span className="text-sm text-gray-500">Địa điểm</span>
@@ -128,7 +223,15 @@ const RequestDetail = () => {
                                         <Users className="w-5 h-5 text-purple-500" />
                                         <div>
                                             <span className="text-sm text-gray-500">Số lượng tối đa</span>
-                                            <p className="font-medium">{workshopData.maxParticipants} người</p>
+                                            <p className="font-medium">{workshopData.maxParticipants}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center space-x-3">
+                                        <Users className="w-5 h-5 text-purple-500" />
+                                        <div>
+                                            <span className="text-sm text-gray-500">Danh mục</span>
+                                            <p className="font-medium">{categoryName}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -159,13 +262,28 @@ const RequestDetail = () => {
                             </div>
                         </div>
 
+                        {/* Video URL */}
+                        {workshopData.introVideoUrl && (
+                            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                                <h2 className="text-xl font-semibold text-gray-900 mb-4">Video giới thiệu</h2>
+                                <a
+                                    href={workshopData.introVideoUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline"
+                                >
+                                    {workshopData.introVideoUrl}
+                                </a>
+                            </div>
+                        )}
+
                         {/* Status and Actions */}
                         <div className="bg-white rounded-lg shadow-sm p-6">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <h2 className="text-xl font-semibold text-gray-900 mb-2">Trạng thái Workshop</h2>
                                     <div className="flex items-center space-x-2">
-                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${workshopData.status === 'Đã phê duyệt' ? 'bg-green-100 text-green-800' : workshopData.status === 'Bị từ chối' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
                                             {workshopData.status}
                                         </span>
                                     </div>
@@ -173,40 +291,14 @@ const RequestDetail = () => {
 
                                 <div className="flex space-x-3">
                                     {/* Nút Duyệt */}
-                                    <Popconfirm
-                                        title="Duyệt workshop"
-                                        description="Bạn có chắc chắn muốn duyệt workshop này không?"
-                                        onConfirm={handleApprove}
-                                        okText="Xác nhận"
-                                        cancelText="Hủy"
-                                        okButtonProps={{ loading: isApproving }}
+                                    <button
+                                        onClick={handleApprove}
+                                        className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
+                                        disabled={isApproving || workshopData.status !== 'Đang chờ duyệt'}
                                     >
-                                        <button
-                                            className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
-                                            disabled={isApproving || isRejecting}
-                                        >
-                                            <CheckCircle className="w-4 h-4" />
-                                            <span>Duyệt</span>
-                                        </button>
-                                    </Popconfirm>
-
-                                    {/* Nút Từ chối */}
-                                    <Popconfirm
-                                        title="Từ chối workshop"
-                                        description="Bạn có chắc chắn muốn từ chối workshop này không?"
-                                        onConfirm={handleReject}
-                                        okText="Xác nhận"
-                                        cancelText="Hủy"
-                                        okButtonProps={{ loading: isRejecting }}
-                                    >
-                                        <button
-                                            className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
-                                            disabled={isApproving || isRejecting}
-                                        >
-                                            <XCircle className="w-4 h-4" />
-                                            <span>Từ chối</span>
-                                        </button>
-                                    </Popconfirm>
+                                        <CheckCircle className="w-4 h-4" />
+                                        <span>Duyệt</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -216,14 +308,7 @@ const RequestDetail = () => {
                             <h2 className="text-xl font-semibold text-gray-900 mb-4">Mô tả chi tiết</h2>
                             <div className="prose max-w-none">
                                 <p className="text-gray-600 leading-relaxed">
-                                    Khóa học yoga này được thiết kế đặc biệt dành cho những người mới bắt đầu muốn tìm hiểu và thực hành yoga.
-                                    Trong suốt khóa học, bạn sẽ được hướng dẫn các tư thế cơ bản, kỹ thuật thở hấp và thiền định.
-                                    Yoga không chỉ giúp cải thiện sức khỏe thể chất mà còn mang lại sự thư giãn tinh thần,
-                                    giảm stress và tăng cường sự linh hoạt của cơ thể.
-                                </p>
-                                <p className="text-gray-600 leading-relaxed mt-4">
-                                    Lớp học được tổ chức trong không gian thoáng mát, yên tĩnh với đầy đủ trang thiết bị hỗ trợ.
-                                    Giảng viên có kinh nghiệm nhiều năm trong lĩnh vực yoga sẽ đồng hành cùng bạn trong suốt quá trình học.
+                                    {workshopData.description}
                                 </p>
                             </div>
                         </div>
@@ -234,11 +319,11 @@ const RequestDetail = () => {
                             <div className="grid md:grid-cols-2 gap-4">
                                 <div>
                                     <span className="text-sm text-gray-500">Tên tổ chức</span>
-                                    <p className="font-medium">{workshopData.organizer}</p>
+                                    <p className="font-medium">{organizerName}</p>
                                 </div>
                                 <div>
                                     <span className="text-sm text-gray-500">Email liên hệ</span>
-                                    <p className="font-medium">{workshopData.organizerEmail}</p>
+                                    <p className="font-medium">{organizerEmail}</p>
                                 </div>
                             </div>
                         </div>
@@ -246,7 +331,7 @@ const RequestDetail = () => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default RequestDetail
+export default RequestDetail;

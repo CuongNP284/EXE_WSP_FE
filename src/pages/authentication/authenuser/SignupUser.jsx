@@ -10,11 +10,16 @@ const SignupUser = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    phoneNumber: ''
+    phoneNumber: '',
+    isOrganizer: false, // Thêm trạng thái cho checkbox
   });
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === 'checkbox' ? checked : value,
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -31,8 +36,8 @@ const SignupUser = () => {
         lastName: formData.lastName,
         password: formData.password,
         phoneNumber: formData.phoneNumber,
-        userRole: 2, // Hardcoded to 2 for USER role
-        status: 1 // Hardcoded to true as requested
+        userRole: formData.isOrganizer ? 2 : 3, // 2 cho Organizer, 3 cho User
+        status: 1,
       };
       console.log('Signup attempt with:', registrationData);
       const response = await ApiService.registerUser(registrationData);
@@ -53,16 +58,13 @@ const SignupUser = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Card */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Header */}
           <div className="px-8 pt-8 pb-4">
             <h1 className="text-3xl font-bold text-gray-800 text-center">Tạo Tài Khoản</h1>
             <p className="text-center text-gray-600 mt-2">Tham gia cộng đồng của chúng tôi ngay hôm nay</p>
           </div>
 
-          {/* Form Container */}
-          <div className="px-8 py-6">
+          <div className="px-8 py-6 max-h-[75vh] overflow-y-auto">
             <form onSubmit={handleSubmit}>
               {/* First Name Field */}
               <div className="mb-6">
@@ -163,6 +165,20 @@ const SignupUser = () => {
                 </div>
               </div>
 
+              {/* Organizer Checkbox */}
+              <div className="mb-6">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="isOrganizer"
+                    checked={formData.isOrganizer}
+                    onChange={handleChange}
+                    className="mr-2 h-5 w-5"
+                  />
+                  <span className="text-gray-600 font-medium">Bạn muốn trở thành Organizer?</span>
+                </label>
+              </div>
+
               {/* Submit Button */}
               <button
                 type="submit"
@@ -186,7 +202,7 @@ const SignupUser = () => {
                   <svg className="w-6 h-6" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      d="M22.56 12.25c0-.78-.07-1.53-.20-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                     />
                     <path
                       fill="#34A853"

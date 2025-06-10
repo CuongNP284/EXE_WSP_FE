@@ -1,39 +1,37 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  Users, 
-  Eye, 
-  Star, 
-  Phone, 
-  Mail, 
-  ArrowLeft,
-  Edit,
-  User,
-  Trophy,
-  Music,
-  Target,
-  Zap,
-  Award,
-  BookOpen
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { Calendar, Clock, MapPin, Users, Eye, Star, Phone, Mail, ArrowLeft } from 'lucide-react';
 import CustomerHeader from '../../../components/customer/CustomerHeader';
 import CustomeFooter from '../../../components/customer/CustomeFooter';
+import ApiService from '../../../service/ApiService';
+import { message } from 'antd';
 
-const UserProfile = () => {
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [userInfo, setUserInfo] = useState({
-    name: 'Nguyễn Văn An',
-    email: 'nguyenvanan@gmail.com',
-    phone: '0987654321',
-    bio: 'Yêu thích tham gia các workshop về sức khỏe và phát triển bản thân',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80'
-  });
+const WorkshopDetail = () => {
+  const { workshopId } = useParams();
+  const [workshop, setWorkshop] = useState(null);
+  const [organizer, setOrganizer] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState('2024-03-09');
 
-  // Recent activities data (workshops attended)
-  const recentActivities = [
+  // Hardcoded reviews and similar workshops (no API provided)
+  const reviews = [
+    {
+      id: 1,
+      name: "Nguyễn Huyền Châu",
+      rating: 4.7,
+      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b789?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
+      comment: "Khóa đào tạo này rất dễ chịu tương lai chia mentor rất ngá để chương xã chạy cảnh vì tính"
+    },
+    {
+      id: 2,
+      name: "Hoàng Minh Khoa",
+      rating: 4.7,
+      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
+      comment: "Khóa thi năng Design kọn tính rất dễy án giúp án và mỗi lý thuyết rất thấy. Mình đã học 5 days, đượt 4 buổi về"
+    }
+  ];
+
+  const similarWorkshops = [
     {
       id: 1,
       name: "LUYỆN TẬP THÂN KHỎE VỚI YOGA",
@@ -42,8 +40,7 @@ const UserProfile = () => {
       price: "500,000 VNĐ",
       originalPrice: "600,000 VNĐ",
       date: "Thứ 2, 04/03",
-      location: "128/37A Lê Văn Duyệt, Bình Thạnh",
-      status: "Đã tham gia"
+      location: "128/37A Lê Văn Duyệt, Bình Thạnh"
     },
     {
       id: 2,
@@ -52,8 +49,7 @@ const UserProfile = () => {
       image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
       price: "500,000 VNĐ",
       date: "Thứ 2, 09/03",
-      location: "128/37A Lê Văn Duyệt, Bình Thạnh",
-      status: "Đã đăng ký"
+      location: "128/37A Lê Văn Duyệt, Bình Thạnh"
     },
     {
       id: 3,
@@ -62,243 +58,266 @@ const UserProfile = () => {
       image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
       price: "500,000 VNĐ",
       date: "Thứ 4, 04/03",
-      location: "128/37A Lê Văn Duyệt, Bình Thạnh",
-      status: "Đã tham gia"
+      location: "128/37A Lê Văn Duyệt, Bình Thạnh"
     }
   ];
 
-  // Achievement badges data
-  const achievements = [
-    {
-      id: 1,
-      title: "Chúa tể của những Workshop",
-      description: "Tham gia 20+ workshop",
-      icon: Trophy,
-      color: "bg-yellow-500",
-      earned: true
-    },
-    {
-      id: 2,
-      title: "Dân chơi thể hệ mới",
-      description: "Tham gia 5+ workshop",
-      icon: Star,
-      color: "bg-purple-500",
-      earned: true
-    },
-    {
-      id: 3,
-      title: "Ông Tổ Ngành Thể Thao",
-      description: "Tham gia 30+ workshop về thể thao",
-      icon: Target,
-      color: "bg-green-500",
-      earned: false
-    },
-    {
-      id: 4,
-      title: "Chiến thần Truyền thống",
-      description: "Tham gia 10+ workshop về marketing, truyền thống",
-      icon: BookOpen,
-      color: "bg-blue-500",
-      earned: true
-    },
-    {
-      id: 5,
-      title: "Ông 'zưa' Âm nhạc",
-      description: "Tham gia 20+ workshop về âm nhạc",
-      icon: Music,
-      color: "bg-pink-500",
-      earned: false
-    },
-    {
-      id: 6,
-      title: "Cao Thủ Điện Tử",
-      description: "Tham gia 20+ workshop về công nghệ, tỉa thuật",
-      icon: Zap,
-      color: "bg-orange-500",
-      earned: true
-    }
+  // Hardcoded available dates (no API provided)
+  const availableDates = [
+    { date: '2024-03-09', time: '14h00 - 16h30', day: 'Thứ 2' },
+    { date: '2024-03-12', time: '14h00 - 16h30', day: 'Thứ 4' },
+    { date: '2024-03-14', time: '14h00 - 16h30', day: 'Thứ 6' }
   ];
 
-  const handleEditToggle = () => {
-    setIsEditMode(!isEditMode);
+  // Map status code to display text
+  const mapStatusToDisplay = (status) => {
+    switch (status) {
+      case 0: return 'OFFLINE';
+      case 1: return 'ONLINE';
+      default: return 'UNKNOWN';
+    }
   };
 
-  const handleSave = () => {
-    setIsEditMode(false);
-    // Here you would typically save to backend
+  // Fetch workshop and organizer details
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Fetch workshop details
+        const workshopResponse = await ApiService.getWorkshopById(workshopId);
+        if (workshopResponse.status === 200 && workshopResponse.data) {
+          setWorkshop({
+            ...workshopResponse.data.data,
+            status: mapStatusToDisplay(workshopResponse.data.data.status),
+            availableDates // Hardcoded for now
+          });
+
+          // Fetch organizer details
+          const organizerResponse = await ApiService.getUserById(workshopResponse.data.data.organizerId);
+          if (organizerResponse.status === 200 && organizerResponse.data) {
+            setOrganizer(organizerResponse.data.data);
+          } else {
+            message.error(organizerResponse.message || 'Không thể tải thông tin nhà tổ chức.');
+          }
+        } else {
+          message.error(workshopResponse.message || 'Không thể tải chi tiết workshop.');
+        }
+      } catch (error) {
+        message.error('Lỗi khi tải dữ liệu.');
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (workshopId) {
+      fetchData();
+    } else {
+      message.error('Không tìm thấy ID workshop.');
+      setLoading(false);
+    }
+  }, [workshopId]);
+
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('vi-VN');
   };
 
-  const handleInputChange = (field, value) => {
-    setUserInfo(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-600">Đang tải...</div>
+      </div>
+    );
+  }
+
+  if (!workshop || !organizer) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-600">Không thể tải thông tin workshop.</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
       <CustomerHeader />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Profile Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
-            <div className="relative">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2">
+            {/* Workshop Image */}
+            <div className="relative mb-6">
               <img
-                src={userInfo.avatar}
-                alt={userInfo.name}
-                className="w-24 h-24 rounded-full object-cover"
+                src={workshop.image || 'https://via.placeholder.com/800x400'}
+                alt={workshop.title}
+                className="w-full h-64 md:h-80 object-cover rounded-lg"
               />
-              {isEditMode && (
-                <button className="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded-full">
-                  <Edit size={12} />
-                </button>
-              )}
-            </div>
-            
-            <div className="flex-1">
-              {isEditMode ? (
-                <div className="space-y-4">
-                  <input
-                    type="text"
-                    value={userInfo.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    className="text-2xl font-bold border-b-2 border-blue-500 bg-transparent outline-none"
-                  />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                      <input
-                        type="email"
-                        value={userInfo.email}
-                        onChange={(e) => handleInputChange('email', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
-                      <input
-                        type="tel"
-                        value={userInfo.phone}
-                        onChange={(e) => handleInputChange('phone', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Giới thiệu</label>
-                    <textarea
-                      value={userInfo.bio}
-                      onChange={(e) => handleInputChange('bio', e.target.value)}
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">{userInfo.name}</h1>
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-gray-600">
-                      <Mail size={16} className="mr-2" />
-                      <span>{userInfo.email}</span>
-                    </div>
-                    <div className="flex items-center text-gray-600">
-                      <Phone size={16} className="mr-2" />
-                      <span>{userInfo.phone}</span>
-                    </div>
-                  </div>
-                  <p className="text-gray-600">{userInfo.bio}</p>
-                </div>
-              )}
+              <div className="absolute top-4 right-4">
+                <span className="bg-gray-800 text-white px-3 py-1 rounded-full text-sm font-medium">
+                  {workshop.status}
+                </span>
+              </div>
             </div>
 
-            <div className="flex space-x-2">
-              {isEditMode ? (
-                <>
-                  <button
-                    onClick={handleSave}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                  >
-                    Lưu
-                  </button>
-                  <button
-                    onClick={handleEditToggle}
-                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                  >
-                    Hủy
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={handleEditToggle}
-                  className="bg-[#091238] hover:bg-opacity-90 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
-                >
-                  <Edit size={16} />
-                  Chỉnh sửa
+            {/* Workshop Title */}
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{workshop.title}</h1>
+              <p className="text-gray-600 text-lg">{workshop.description}</p>
+              <p className="text-sm text-gray-500 mt-1">Nhà tổ chức: {organizer.firstName} {organizer.lastName}</p>
+            </div>
+
+            {/* Workshop Details */}
+            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">THÔNG TIN CHI TIẾT</h2>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <MapPin size={20} className="text-gray-400 mr-3 mt-1" />
+                  <div>
+                    <p className="font-medium text-gray-900">Địa điểm</p>
+                    <p className="text-gray-600">{workshop.location}</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <Phone size={20} className="text-gray-400 mr-3 mt-1" />
+                  <div>
+                    <p className="font-medium text-gray-900">Số điện thoại</p>
+                    <p className="text-gray-600">{organizer.phoneNumber}</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <Mail size={20} className="text-gray-400 mr-3 mt-1" />
+                  <div>
+                    <p className="font-medium text-gray-900">Email</p>
+                    <p className="text-gray-600">{organizer.email}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">MÔ TẢ</h2>
+              <div className="text-gray-600 whitespace-pre-line">
+                {workshop.description}
+              </div>
+            </div>
+
+            {/* Schedule Card */}
+            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">LỊCH CHI TIẾT</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {workshop.availableDates.map((schedule, index) => (
+                  <div key={index} className="text-center">
+                    <div className="bg-[#091238] text-white rounded-lg p-4">
+                      <div className="text-sm opacity-80 mb-1">{schedule.day}</div>
+                      <div className="text-xs opacity-60 mb-2">Tháng 3</div>
+                      <div className="text-2xl font-bold mb-2">
+                        {schedule.date.split('-')[2]}
+                      </div>
+                      <div className="text-xs opacity-80">{schedule.time}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Reviews Section */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                ĐÁNH GIÁ
+                <span className="text-sm text-gray-500 ml-2">Đánh giá gần đây</span>
+              </h2>
+              <div className="space-y-4">
+                {reviews.map((review) => (
+                  <div key={review.id} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
+                    <img
+                      src={review.avatar}
+                      alt={review.name}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-gray-900">{review.name}</h4>
+                        <div className="flex items-center">
+                          <Star size={16} className="text-yellow-500 fill-current mr-1" />
+                          <span className="text-sm font-medium text-gray-900">{review.rating}</span>
+                        </div>
+                      </div>
+                      <p className="text-gray-600 text-sm">{review.comment}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar - Fixed pricing card */}
+          <div className="lg:col-span-1">
+            <div className="bg-[#091238] text-white rounded-lg p-6 sticky top-4">
+              <h3 className="text-lg font-semibold mb-4">Thông tin vé</h3>
+              <div className="mb-4">
+                <h4 className="text-xl font-bold mb-2">{workshop.title}</h4>
+                <p className="text-sm opacity-80 mb-1">Nhà tổ chức: {organizer.firstName} {organizer.lastName}</p>
+                <div className="flex items-center text-sm opacity-80 mb-2">
+                  <MapPin size={14} className="mr-1" />
+                  <span>{workshop.location}</span>
+                </div>
+                <div className="flex items-center text-sm opacity-80">
+                  <Calendar size={14} className="mr-1" />
+                  <span>{formatDate(workshop.createdAt)}</span>
+                </div>
+              </div>
+              <div className="mb-6">
+                <div className="text-2xl font-bold mb-2">Giá từ: {workshop.price.toLocaleString('vi-VN')} VNĐ</div>
+                <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                  ĐẶT VÉ NGAY
                 </button>
-              )}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Recent Activities Section */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Những Hoạt Động Gần Đây</h2>
-          
+        {/* Similar Workshops Section */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">WORKSHOP BẠN CÓ THỂ THÍCH</h2>
+          <p className="text-gray-600 mb-6">Dựa trên thể loại workshop bạn đang xem</p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recentActivities.map((activity) => (
-              <div key={activity.id} className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
-                {/* Workshop Image */}
+            {similarWorkshops.map((workshop) => (
+              <div key={workshop.id} className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
                 <div className="relative">
                   <img
-                    src={activity.image}
-                    alt={activity.name}
+                    src={workshop.image}
+                    alt={workshop.name}
                     className="w-full h-48 object-cover"
                   />
-                  <div className="absolute top-2 right-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      activity.status === 'Đã tham gia' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {activity.status}
-                    </span>
-                  </div>
                 </div>
-
-                {/* Workshop Content */}
                 <div className="p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {activity.name}
+                    {workshop.name}
                   </h3>
                   <p className="text-gray-600 text-sm mb-4">
-                    {activity.description}
+                    {workshop.description}
                   </p>
-
-                  {/* Workshop Details */}
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center text-sm text-gray-600">
-                      <Calendar size={16} className="mr-2 text-gray-400" />
-                      <span>{activity.date}</span>
+                      <Calendar size={16} className="mr-2 text-gray-700" />
+                      <span>{workshop.date}</span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
-                      <MapPin size={16} className="mr-2 text-gray-400" />
-                      <span className="line-clamp-1">{activity.location}</span>
+                      <MapPin size={16} className="mr-2 text-gray-700" />
+                      <span className="line-clamp-1">{workshop.location}</span>
                     </div>
                   </div>
-
-                  {/* Price */}
                   <div className="mb-4">
                     <div className="flex items-center space-x-2">
-                      <span className="text-lg font-bold text-[#091238]">{activity.price}</span>
-                      {activity.originalPrice && (
-                        <span className="text-sm text-gray-500 line-through">{activity.originalPrice}</span>
+                      <span className="text-lg font-bold text-[#091238]">{workshop.price}</span>
+                      {workshop.originalPrice && (
+                        <span className="text-sm text-gray-500 line-through">{workshop.originalPrice}</span>
                       )}
                     </div>
                   </div>
-
-                  {/* Action Button */}
                   <Link
                     to={`/workshopdetail`}
                     className="w-full bg-[#091238] hover:bg-opacity-90 text-white py-3 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 no-underline"
@@ -311,70 +330,6 @@ const UserProfile = () => {
             ))}
           </div>
         </div>
-
-        {/* Achievements Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-3">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Danh Hiệu Của Bạn</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {achievements.map((achievement) => {
-                const IconComponent = achievement.icon;
-                return (
-                  <div 
-                    key={achievement.id} 
-                    className={`bg-[#091238] text-white rounded-lg p-6 text-center transition-all ${
-                      !achievement.earned && 'opacity-60 grayscale'
-                    }`}
-                  >
-                    <div className="flex justify-center mb-4">
-                      <div className="bg-white rounded-full p-4">
-                        <IconComponent size={32} className="text-[#091238]" />
-                      </div>
-                    </div>
-                    <h3 className="font-bold text-lg mb-2">
-                      {achievement.title}
-                    </h3>
-                    <p className="text-sm opacity-80 leading-relaxed">
-                      {achievement.description}
-                    </p>
-                    {achievement.earned && (
-                      <div className="flex items-center justify-center mt-3">
-                        <Award size={16} className="text-yellow-400 mr-1" />
-                        <span className="text-xs text-yellow-400 font-medium">Đã đạt được</span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Stats Card */}
-          <div className="lg:col-span-1">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Thống Kê</h2>
-            <div className="bg-[#091238] text-white rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Thành tích của bạn</h3>
-              <div className="space-y-4">
-                <div className="text-center">
-                  <div className="text-3xl font-bold mb-1">24</div>
-                  <div className="text-sm opacity-80">Workshop đã tham gia</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold mb-1">4/6</div>
-                  <div className="text-sm opacity-80">Danh hiệu đạt được</div>
-                </div>
-                <div className="text-center">
-                  <div className="flex items-center justify-center">
-                    <Star size={18} className="text-yellow-400 fill-current mr-1" />
-                    <span className="text-3xl font-bold">4.8</span>
-                  </div>
-                  <div className="text-sm opacity-80">Đánh giá trung bình</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <CustomeFooter />
@@ -382,4 +337,4 @@ const UserProfile = () => {
   );
 };
 
-export default UserProfile;
+export default WorkshopDetail;

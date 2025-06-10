@@ -128,7 +128,7 @@ export default class ApiService {
     static async forgetPassword(forgetData) {
         try {
             const response = await axios.post(
-                `${this.BASE_URL}/api/v1/User/forget`,
+                `${this.BASE_URL}/api/v1/User/forgot`,
                 forgetData
             );
 
@@ -825,6 +825,68 @@ export default class ApiService {
     }
 
     /**
+ * Get analytics for organizer
+ * @returns {Promise<Object>} Response object with status and data/message
+ */
+    static async getOrganizerAnalytics() {
+        try {
+            const response = await axios.get(
+                `${this.BASE_URL}/api/v1/Analysis/organizer`,
+                { headers: this.getHeader() }
+            );
+
+            console.log("Fetched organizer analytics:", response.data);
+
+            return {
+                status: 200,
+                data: response.data,
+                message: "Organizer analytics fetched successfully"
+            };
+        } catch (error) {
+            console.error("Error fetching organizer analytics:", error);
+            return {
+                status: error.response?.status || 400,
+                message: error.response?.data?.message || "Failed to fetch organizer analytics"
+            };
+        }
+    }
+
+    /**
+     * Handle favourite category
+     * @param {Object} categoryData - Object containing categoryId
+     * @returns {Promise<Object>} Response object with status and data/message
+     */
+    static async handleFavouriteCategory(categoryData) {
+        try {
+            if (!categoryData.categoryId) {
+                throw new Error("Category ID is required");
+            }
+
+            console.log("Handling favourite category with data:", categoryData);
+
+            const response = await axios.post(
+                `${this.BASE_URL}/api/v1/Category/favourite`,
+                categoryData,
+                { headers: this.getHeader() }
+            );
+
+            console.log("Handle favourite category response:", response.data);
+
+            return {
+                status: 200,
+                data: response.data,
+                message: "Favourite category handled successfully"
+            };
+        } catch (error) {
+            console.error("Error handling favourite category:", error);
+            return {
+                status: error.response?.status || 400,
+                message: error.response?.data?.message || "Failed to handle favourite category"
+            };
+        }
+    }
+
+    /**
      * Send ticket confirmation email
      * @param {Object} ticketData - Object containing ticket confirmation details
      * @returns {Promise<Object>} Response object with status and message
@@ -1169,15 +1231,15 @@ export default class ApiService {
 
     /**
      * Create a new workshop
-     * @param {Object} workshopData - The workshop data containing name, description, startDate, endDate, location, capacity, price, organizerId, categoryId
+     * @param {Object} workshopData - The workshop data containing organizerId, title, description, categoryId, location, introVideoUrl, durationMinutes, price
      * @returns {Promise<Object>} Response object with status and data/message
      */
     static async createWorkshop(workshopData) {
         try {
-            if (!workshopData.name || !workshopData.description || !workshopData.startDate ||
-                !workshopData.endDate || !workshopData.location || !workshopData.capacity ||
-                workshopData.price === undefined || !workshopData.organizerId || !workshopData.categoryId) {
-                throw new Error("Name, description, startDate, endDate, location, capacity, price, organizerId, and categoryId are required");
+            if (!workshopData.organizerId || !workshopData.title || !workshopData.description ||
+                !workshopData.categoryId || !workshopData.location || !workshopData.introVideoUrl ||
+                workshopData.durationMinutes === undefined || workshopData.price === undefined) {
+                throw new Error("organizerId, title, description, categoryId, location, introVideoUrl, durationMinutes, and price are required");
             }
 
             console.log("Creating new workshop with data:", workshopData);
@@ -1200,6 +1262,48 @@ export default class ApiService {
             return {
                 status: error.response?.status || 400,
                 message: error.response?.data?.message || error.message || "Failed to create workshop"
+            };
+        }
+    }
+
+    /**
+     * Update a workshop
+     * @param {string} workshopId - The ID of the workshop to update
+     * @param {Object} workshopData - The updated workshop data containing organizerId, title, description, categoryId, location, introVideoUrl, durationMinutes, price
+     * @returns {Promise<Object>} Response object with status and data/message
+     */
+    static async updateWorkshop(workshopId, workshopData) {
+        try {
+            if (!workshopId) {
+                throw new Error("Workshop ID is required for update");
+            }
+            if (!workshopData.organizerId || !workshopData.title || !workshopData.description ||
+                !workshopData.categoryId || !workshopData.location || !workshopData.introVideoUrl ||
+                workshopData.durationMinutes === undefined || workshopData.price === undefined) {
+                throw new Error("organizerId, title, description, categoryId, location, introVideoUrl, durationMinutes, and price are required");
+            }
+
+            console.log("Updating workshop with id:", workshopId);
+            console.log("Update data:", workshopData);
+
+            const response = await axios.put(
+                `${this.BASE_URL}/api/v1/Workshop`,
+                { workshopId, ...workshopData },
+                { headers: this.getHeader() }
+            );
+
+            console.log("Update workshop response:", response.data);
+
+            return {
+                status: 200,
+                data: response.data,
+                message: "Workshop updated successfully"
+            };
+        } catch (error) {
+            console.error("Error updating workshop:", error);
+            return {
+                status: error.response?.status || 400,
+                message: error.response?.data?.message || error.message || "Failed to update workshop"
             };
         }
     }
@@ -1234,48 +1338,6 @@ export default class ApiService {
             return {
                 status: error.response?.status || 400,
                 message: error.response?.data?.message || error.message || "Failed to fetch workshop"
-            };
-        }
-    }
-
-    /**
-     * Update a workshop
-     * @param {string} workshopId - The ID of the workshop to update
-     * @param {Object} workshopData - The updated workshop data containing name, description, startDate, endDate, location, capacity, price, organizerId, categoryId
-     * @returns {Promise<Object>} Response object with status and data/message
-     */
-    static async updateWorkshop(workshopId, workshopData) {
-        try {
-            if (!workshopId) {
-                throw new Error("Workshop ID is required for update");
-            }
-            if (!workshopData.name || !workshopData.description || !workshopData.startDate ||
-                !workshopData.endDate || !workshopData.location || !workshopData.capacity ||
-                workshopData.price === undefined || !workshopData.organizerId || !workshopData.categoryId) {
-                throw new Error("Name, description, startDate, endDate, location, capacity, price, organizerId, and categoryId are required");
-            }
-
-            console.log("Updating workshop with id:", workshopId);
-            console.log("Update data:", workshopData);
-
-            const response = await axios.put(
-                `${this.BASE_URL}/api/v1/Workshop`,
-                { workshopId, ...workshopData },
-                { headers: this.getHeader() }
-            );
-
-            console.log("Update workshop response:", response.data);
-
-            return {
-                status: 200,
-                data: response.data,
-                message: "Workshop updated successfully"
-            };
-        } catch (error) {
-            console.error("Error updating workshop:", error);
-            return {
-                status: error.response?.status || 400,
-                message: error.response?.data?.message || error.message || "Failed to update workshop"
             };
         }
     }
@@ -1389,15 +1451,16 @@ export default class ApiService {
             console.log("Approving workshop with id:", workshopId);
 
             const response = await axios.put(
-                `${this.BASE_URL}/api/v1/Workshop/admin/${workshopId}/approve`,
-                {},
+                `${this.BASE_URL}/api/v1/Workshop/admin/${workshopId}/apporve`,
+                { isAccept: true }, // Added isAccept: true in the request body
                 { headers: this.getHeader() }
             );
 
             console.log("Approve workshop response:", response.data);
 
             return {
-                status: 200,
+                status: response.status,
+                data: response.data,
                 message: "Workshop approved successfully"
             };
         } catch (error) {
@@ -1533,6 +1596,61 @@ export default class ApiService {
         }
     }
 
+    /**
+ * Get analytics for admin
+ * @returns {Promise<Object>} Response object with status and data/message
+ */
+    static async getAdminAnalytics() {
+        try {
+            const response = await axios.get(
+                `${this.BASE_URL}/api/v1/Analys/admin`,
+                { headers: this.getHeader() }
+            );
+
+            console.log("Fetched admin analytics:", response.data);
+
+            return {
+                status: 200,
+                data: response.data,
+                message: "Admin analytics fetched successfully"
+            };
+        } catch (error) {
+            console.error("Error fetching admin analytics:", error);
+            return {
+                status: error.response?.status || 400,
+                message: error.response?.data?.message || "Failed to fetch admin analytics"
+            };
+        }
+    }
+
+    /**
+     * Get analytics for organizer
+     * @returns {Promise<Object>} Response object with status and data/message
+     */
+    static async getOrganizerAnalytics() {
+        try {
+            const response = await axios.get(
+                `${this.BASE_URL}/api/v1/Analys/organizer`,
+                { headers: this.getHeader() }
+            );
+
+            console.log("Fetched organizer analytics:", response.data);
+
+            return {
+                status: 200,
+                data: response.data,
+                message: "Organizer analytics fetched successfully"
+            };
+        } catch (error) {
+            console.error("Error fetching organizer analytics:", error);
+            return {
+                status: error.response?.status || 400,
+                message: error.response?.data?.message || "Failed to fetch organizer analytics"
+            };
+        }
+    }
+
+
     static getUserRole() {
         return localStorage.getItem("userRole");
     }
@@ -1540,8 +1658,8 @@ export default class ApiService {
     static mapRoleIdToName(roleId) {
         switch (roleId) {
             case 0: return 'ADMIN';
-            case 1: return 'ORGANIZER';
-            case 2: return 'USER';
+            case 2: return 'ORGANIZER';
+            case 3: return 'USER';
             default: return 'USER';
         }
     }

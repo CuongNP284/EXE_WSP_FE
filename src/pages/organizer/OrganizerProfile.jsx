@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Upload, Avatar, Tag, Space, Divider, message } from 'antd';
 import { UserOutlined, EditOutlined, SaveOutlined, UploadOutlined, PlusOutlined } from '@ant-design/icons';
 import OrganizerSidebar from '../../components/organizer/OrganizerSidebar';
 import OrganizerHeader from '../../components/organizer/OrganizerHeader';
+import ApiService from '../../service/ApiService';
 
 const { TextArea } = Input;
 
@@ -12,22 +13,43 @@ const OrganizerProfile = () => {
     const [form] = Form.useForm();
     const [tags, setTags] = useState(['#Tĩnh tâm', '#Kiến thức', '#Sức khỏe']);
     const [newTag, setNewTag] = useState('');
+    const [userData, setUserData] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const toggleSidebar = () => {
         setSidebarOpen(!sidebarOpen);
     };
 
-    const initialValues = {
-        organizerName: 'Tumy House',
-        description: 'Là nơi mà bạn có thể đến để cùng nhau kết nối, học hỏi và tìm thấy phương pháp để giúp bạn thấm "Nâng cao rung động – Tìm thấy chính mình" để tương thích với sự chuyển dịch của Trái Đất mới!',
-        followers: '1,123',
-        experience: '2',
-        workshops: '9',
-        email: 'contact@tumyhouse.com',
-        phone: '+84 123 456 789',
-        address: 'Hồ Chí Minh, Việt Nam',
-        website: 'www.tumyhouse.com'
-    };
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await ApiService.getLoggedInUserInfo();
+                if (response.status === 200 && response.data) {
+                    setUserData(response.data);
+                    form.setFieldsValue({
+                        organizerName: `${response.data.firstName} ${response.data.lastName}`,
+                        email: response.data.email,
+                        phone: response.data.phoneNumber,
+                        description: response.data.description || 'Chưa có mô tả.',
+                        address: response.data.address || 'Chưa có địa chỉ.',
+                        website: response.data.website || 'Chưa có website.',
+                        followers: response.data.followers || '0',
+                        experience: response.data.experience || '0',
+                        workshops: response.data.workshops || '0',
+                    });
+                } else {
+                    message.error(response.message || 'Không thể lấy thông tin người dùng.');
+                }
+            } catch (error) {
+                message.error('Lỗi khi lấy thông tin người dùng.');
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserData();
+    }, [form]);
 
     const handleEdit = () => {
         setIsEditing(true);
@@ -36,16 +58,30 @@ const OrganizerProfile = () => {
     const handleSave = async () => {
         try {
             const values = await form.validateFields();
+            // Simulate API call to update profile (implement actual API call if available)
             console.log('Saved values:', values);
             message.success('Thông tin đã được cập nhật thành công!');
             setIsEditing(false);
         } catch (error) {
             console.error('Validation failed:', error);
+            message.error('Lỗi khi lưu thông tin.');
         }
     };
 
     const handleCancel = () => {
-        form.setFieldsValue(initialValues);
+        if (userData) {
+            form.setFieldsValue({
+                organizerName: `${userData.firstName} ${userData.lastName}`,
+                email: userData.email,
+                phone: userData.phoneNumber,
+                description: userData.description || 'Chưa có mô tả.',
+                address: userData.address || 'Chưa có địa chỉ.',
+                website: userData.website || 'Chưa có website.',
+                followers: userData.followers || '0',
+                experience: userData.experience || '0',
+                workshops: userData.workshops || '0',
+            });
+        }
         setIsEditing(false);
     };
 
@@ -78,6 +114,14 @@ const OrganizerProfile = () => {
         },
     };
 
+    if (loading) {
+        return <div>Đang tải thông tin...</div>;
+    }
+
+    if (!userData) {
+        return <div>Không thể tải thông tin người dùng.</div>;
+    }
+
     return (
         <div className="flex h-screen">
             <OrganizerSidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
@@ -85,7 +129,6 @@ const OrganizerProfile = () => {
                 <OrganizerHeader />
                 <div className="flex-1 overflow-y-auto p-6">
                     <div className="max-w-4xl mx-auto">
-                        {/* Header */}
                         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                             <div className="flex justify-between items-center mb-4">
                                 <h1 className="text-2xl font-bold text-gray-800">Thông tin tài khoản</h1>
@@ -120,10 +163,8 @@ const OrganizerProfile = () => {
                             <Form
                                 form={form}
                                 layout="vertical"
-                                initialValues={initialValues}
                                 className="space-y-4"
                             >
-                                {/* Profile Image and Basic Info */}
                                 <div className="flex flex-col md:flex-row gap-6">
                                     <div className="flex flex-col items-center space-y-4">
                                         <div className="relative">
@@ -147,9 +188,11 @@ const OrganizerProfile = () => {
                                         </div>
                                         {!isEditing && (
                                             <div className="text-center">
-                                                <div className="text-lg font-semibold text-gray-800">Tumy House</div>
+                                                <div className="text-lg font-semibold text-gray-800">
+                                                    {userData.firstName} {userData.lastName}
+                                                </div>
                                                 <div className="text-sm text-blue-500 bg-blue-50 px-2 py-1 rounded">
-                                                    Tao workshop
+                                                    {ApiService.mapRoleIdToName(userData.role)}
                                                 </div>
                                             </div>
                                         )}
@@ -184,7 +227,6 @@ const OrganizerProfile = () => {
 
                                 <Divider />
 
-                                {/* Statistics */}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div className="text-center p-4 bg-blue-50 rounded-lg">
                                         <div className="text-2xl font-bold text-blue-600">
@@ -225,7 +267,6 @@ const OrganizerProfile = () => {
 
                                 <Divider />
 
-                                {/* Contact Information */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <Form.Item
                                         label="Email liên hệ"
@@ -275,7 +316,6 @@ const OrganizerProfile = () => {
 
                                 <Divider />
 
-                                {/* Tags */}
                                 <div>
                                     <div className="mb-3 font-medium text-gray-700">Thể loại</div>
                                     <div className="space-y-3">

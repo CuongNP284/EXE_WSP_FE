@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Select, message } from 'antd';
 import OrganizerSidebar from '../../components/organizer/OrganizerSidebar';
 import OrganizerHeader from '../../components/organizer/OrganizerHeader';
-import { Plus, Image } from 'lucide-react';
+import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
 import ApiService from '../../service/ApiService';
 
 const { Option } = Select;
 
 const CreateWorkshop = () => {
+    const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [currentStep, setCurrentStep] = useState(1);
     const [categories, setCategories] = useState([]);
@@ -26,7 +28,11 @@ const CreateWorkshop = () => {
         const fetchCategories = async () => {
             const response = await ApiService.getAllCategories();
             if (response.status === 200) {
-                setCategories(response.data.data || []);
+                const mappedCategories = response.data.data.items.map(item => ({
+                    id: item.id || item.categoryId, // Thay bằng trường phù hợp
+                    name: item.name
+                }));
+                setCategories(mappedCategories);
             } else {
                 message.error('Failed to fetch categories');
             }
@@ -53,8 +59,12 @@ const CreateWorkshop = () => {
     };
 
     const handleCategoryChange = (value) => {
-        setFormData(prev => ({ ...prev, categoryId: value }));
-        setErrors(prev => ({ ...prev, categoryId: '' }));
+        console.log("Selected category value:", value);
+        setFormData(prev => ({
+            ...prev,
+            categoryId: value ? String(value) : ''
+        }));
+        setErrors(prev => ({ ...prev, categoryId: value ? '' : 'Category is required' }));
     };
 
     const validateStep = () => {
@@ -65,9 +75,9 @@ const CreateWorkshop = () => {
             if (!formData.categoryId) newErrors.categoryId = 'Category is required';
             if (!formData.location.trim()) newErrors.location = 'Location is required';
         } else if (currentStep === 2) {
-            if (!formData.durationMinutes || formData.durationMinutes <= 0) 
+            if (!formData.durationMinutes || formData.durationMinutes <= 0)
                 newErrors.durationMinutes = 'Duration must be greater than 0';
-            if (formData.price === '' || formData.price < 0) 
+            if (formData.price === '' || formData.price < 0)
                 newErrors.price = 'Price must be non-negative';
         }
         setErrors(newErrors);
@@ -77,26 +87,59 @@ const CreateWorkshop = () => {
     const handleNext = async () => {
         if (validateStep()) {
             if (currentStep === 2) {
+                const organizerId = localStorage.getItem('userId');
+                if (!organizerId) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: 'Không tìm thấy thông tin người tổ chức. Vui lòng đăng nhập lại.',
+                    });
+                    navigate('/loginuser');
+                    return;
+                }
+
+                // Validate organizerId format (UUID)
+                const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+                if (!uuidRegex.test(organizerId)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: 'Định dạng ID người tổ chức không hợp lệ. Vui lòng đăng nhập lại.',
+                    });
+                    navigate('/loginuser');
+                    return;
+                }
+
                 const workshopData = {
                     ...formData,
+                    organizerId: organizerId,
                     durationMinutes: parseInt(formData.durationMinutes),
                     price: parseFloat(formData.price)
                 };
-                const response = await ApiService.createWorkshop(workshopData);
-                if (response.status === 200) {
-                    message.success('Workshop created successfully');
-                    setFormData({
-                        title: '',
-                        description: '',
-                        categoryId: '',
-                        location: '',
-                        introVideoUrl: '',
-                        durationMinutes: '',
-                        price: ''
+
+                try {
+                    const response = await ApiService.createWorkshop(workshopData);
+                    if (response.status === 200) {
+                        message.success('Workshop created successfully');
+                        setFormData({
+                            title: '',
+                            description: '',
+                            categoryId: '',
+                            location: '',
+                            introVideoUrl: '',
+                            durationMinutes: '',
+                            price: ''
+                        });
+                        setCurrentStep(1);
+                    } else {
+                        message.error(response.message);
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: 'Đã xảy ra lỗi khi tạo workshop. Vui lòng thử lại.',
                     });
-                    setCurrentStep(1);
-                } else {
-                    message.error(response.message);
                 }
             } else {
                 setCurrentStep(currentStep + 1);
@@ -117,54 +160,56 @@ const CreateWorkshop = () => {
                 return (
                     <div className="space-y-6">
                         <div>
-                            <label className="block text-white text-sm font-medium mb-2">Workshop Title</label>
+                            <label className="block text-white text-sm font-medium mb-2">Tên Workshop</label>
                             <input
                                 type="text"
                                 name="title"
                                 value={formData.title}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 bg-gray-200 rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter workshop title"
+                                placeholder="Nhập tên workshop"
                             />
                             {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
                         </div>
 
                         <div>
-                            <label className="block text-white text-sm font-medium mb-2">Category</label>
+                            <label className="block text-white text-sm font-medium mb-2">Danh mục</label>
                             <Select
-                                value={formData.categoryId}
+                                value={formData.categoryId || undefined}
                                 onChange={handleCategoryChange}
                                 className="w-full"
-                                placeholder="Select category"
+                                placeholder="Chọn danh mục"
                             >
                                 {categories.map(category => (
-                                    <Option key={category.id} value={category.id}>{category.name}</Option>
+                                    <Option key={category.id} value={category.id}>
+                                        {category.name}
+                                    </Option>
                                 ))}
                             </Select>
                             {errors.categoryId && <p className="text-red-500 text-sm mt-1">{errors.categoryId}</p>}
                         </div>
 
                         <div>
-                            <label className="block text-white text-sm font-medium mb-2">Location</label>
+                            <label className="block text-white text-sm font-medium mb-2">Địa điểm</label>
                             <input
                                 type="text"
                                 name="location"
                                 value={formData.location}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 bg-gray-200 rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter location"
+                                placeholder="Nhập địa điểm"
                             />
                             {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
                         </div>
 
                         <div>
-                            <label className="block text-white text-sm font-medium mb-2">Description</label>
+                            <label className="block text-white text-sm font-medium mb-2">Mô tả</label>
                             <textarea
                                 name="description"
                                 value={formData.description}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 bg-gray-200 rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter description"
+                                placeholder="Nhập mô tả"
                                 rows="4"
                             />
                             {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
@@ -175,59 +220,43 @@ const CreateWorkshop = () => {
                 return (
                     <div className="space-y-6">
                         <div>
-                            <label className="block text-white text-sm font-medium mb-2">Duration (minutes)</label>
+                            <label className="block text-white text-sm font-medium mb-2">Thời lượng (phút)</label>
                             <input
                                 type="number"
                                 name="durationMinutes"
                                 value={formData.durationMinutes}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 bg-gray-200 rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter duration"
+                                placeholder="Nhập thời lượng"
                                 min="1"
                             />
                             {errors.durationMinutes && <p className="text-red-500 text-sm mt-1">{errors.durationMinutes}</p>}
                         </div>
 
                         <div>
-                            <label className="block text-white text-sm font-medium mb-2">Price (VND)</label>
+                            <label className="block text-white text-sm font-medium mb-2">Giá (VND)</label>
                             <input
                                 type="number"
                                 name="price"
                                 value={formData.price}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 bg-gray-200 rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter price"
+                                placeholder="Nhập giá"
                                 min="0"
                             />
                             {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
                         </div>
 
                         <div>
-                            <label className="block text-white text-sm font-medium mb-2">Intro Video URL</label>
+                            <label className="block text-white text-sm font-medium mb-2">URL Video Giới thiệu</label>
                             <input
                                 type="text"
                                 name="introVideoUrl"
                                 value={formData.introVideoUrl}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 bg-gray-200 rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter video URL"
+                                placeholder="Nhập URL video"
                             />
-                        </div>
-
-                        <div>
-                            <label className="block text-white text-sm font-medium mb-3">Upload Workshop Media</label>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-gray-200 rounded-lg h-40 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors">
-                                    <Plus className="w-8 h-8 text-gray-600 mb-2" />
-                                    <span className="text-gray-600 text-sm text-center">Add workshop logo</span>
-                                </div>
-                                <div className="bg-gray-200 rounded-lg h-40 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors">
-                                    <div className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center mb-2">
-                                        <Plus className="w-5 h-5 text-white" />
-                                    </div>
-                                    <span className="text-gray-600 text-sm text-center">Add workshop image</span>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 );
@@ -243,17 +272,15 @@ const CreateWorkshop = () => {
                 <OrganizerHeader />
                 <main className="flex-1 overflow-y-auto p-6">
                     <div className="mb-6">
-                        <h2 className="text-3xl font-bold text-gray-900">Create Workshop</h2>
-                        <p className="text-gray-600 mt-1">Create a new workshop</p>
+                        <h2 className="text-3xl font-bold text-gray-900">Tạo Workshop</h2>
+                        <p className="text-gray-600 mt-1">Tạo một workshop mới</p>
                     </div>
 
                     <div className="bg-slate-800 rounded-xl p-6 mb-8">
                         <div className="flex items-center justify-between mb-8">
                             {steps.map((step, index) => (
                                 <div key={step.id} className="flex items-center">
-                                    <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${currentStep >= step.id
-                                        ? 'bg-blue-600 text-white'
-                                        : 'bg-gray-600 text-gray-300'
+                                    <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${currentStep >= step.id ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-300'
                                         }`}>
                                         {step.id}
                                     </div>
@@ -277,19 +304,17 @@ const CreateWorkshop = () => {
                             <button
                                 onClick={handlePrevious}
                                 disabled={currentStep === 1}
-                                className={`px-6 py-2 rounded-lg font-medium ${currentStep === 1
-                                    ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                                className={`px-6 py-2 rounded-lg font-medium ${currentStep === 1 ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-gray-700 text-white hover:bg-gray-600'
                                     }`}
                             >
-                                Previous
+                                Quay lại
                             </button>
 
                             <button
                                 onClick={handleNext}
                                 className="px-6 py-2 rounded-lg font-medium bg-blue-600 text-white hover:bg-blue-700"
                             >
-                                {currentStep === 2 ? 'Create' : 'Next'}
+                                {currentStep === 2 ? 'Tạo' : 'Tiếp theo'}
                             </button>
                         </div>
                     </div>

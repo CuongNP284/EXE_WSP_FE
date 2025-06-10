@@ -30,7 +30,6 @@ import OrganizerRefundPolicy from './pages/customer/AdditionPages/OrganizerRefun
 // Organizer Import
 import OrganizerDashboard from './pages/organizer/OrganizerDashboard';
 import MyWorkshop from './pages/organizer/MyWorkshop';
-import MyRequest from './pages/organizer/MyRequest';
 import OrganizerProfile from './pages/organizer/OrganizerProfile';
 import CreateWorkshop from './pages/organizer/CreateWorkshop';
 import EditWorkshop from './pages/organizer/EditWorkshop';
@@ -52,28 +51,28 @@ import CategoryCreate from './pages/admin/CategoryCreate';
 import CategoryEdit from './pages/admin/CategoryEdit';
 
 const RestrictedRoute = ({ element, allowedRoles }) => {
-    const navigate = useNavigate();
-    const isLoggedIn = !!localStorage.getItem('token');
+  const navigate = useNavigate();
+  const isLoggedIn = !!localStorage.getItem('token');
 
-    if (!isLoggedIn) {
-        Swal.fire({
-            title: 'Yêu cầu đăng nhập',
-            text: 'Bạn cần đăng nhập để truy cập trang này.',
-            icon: 'warning',
-            confirmButtonText: 'Đăng nhập',
-            showCancelButton: true,
-            cancelButtonText: 'Hủy',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                navigate('/loginuser');
-            } else {
-                navigate('/');
-            }
-        });
-        return null;
-    }
+  if (!isLoggedIn) {
+    Swal.fire({
+      title: 'Yêu cầu đăng nhập',
+      text: 'Bạn cần đăng nhập để truy cập trang này.',
+      icon: 'warning',
+      confirmButtonText: 'Đăng nhập',
+      showCancelButton: true,
+      cancelButtonText: 'Hủy',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        navigate('/loginuser');
+      } else {
+        navigate('/');
+      }
+    });
+    return null;
+  }
 
-    return <ProtectedRoute element={element} allowedRoles={allowedRoles} />;
+  return <ProtectedRoute element={element} allowedRoles={allowedRoles} />;
 };
 
 const App = () => {
@@ -91,7 +90,7 @@ const App = () => {
         <Route path='/' element={<ProtectedRoute element={<Homepage />} allowedRoles={['USER']} allowGuest={true} />} />
         <Route path='/blog' element={<ProtectedRoute element={<BlogUser />} allowedRoles={['USER']} allowGuest={true} />} />
         <Route path="/blog/:id" element={<ProtectedRoute element={<BlogDetailUser />} allowedRoles={['USER']} allowGuest={true} />} />
-        <Route path='/workshopdetail/:id' element={<RestrictedRoute element={<WorkshopDetail />} allowedRoles={['USER']} />} />
+        <Route path='/workshopdetail/:workshopId' element={<RestrictedRoute element={<WorkshopDetail />} allowedRoles={['USER']} />} />
         <Route path='/userprofile' element={<RestrictedRoute element={<UserProfile />} allowedRoles={['USER']} />} />
         <Route path='/aboutus' element={<ProtectedRoute element={<AboutUs />} allowedRoles={['USER']} allowGuest={true} />} />
         <Route path='/legalterms' element={<ProtectedRoute element={<LegalTerms />} allowedRoles={['USER']} allowGuest={true} />} />
@@ -106,7 +105,6 @@ const App = () => {
         {/* Organizer Routes - Organizer role only */}
         <Route path='/organizerdashboard' element={<ProtectedRoute element={<OrganizerDashboard />} allowedRoles={['ORGANIZER']} />} />
         <Route path='/myworkshop' element={<ProtectedRoute element={<MyWorkshop />} allowedRoles={['ORGANIZER']} />} />
-        <Route path='/myrequest' element={<ProtectedRoute element={<MyRequest />} allowedRoles={['ORGANIZER']} />} />
         <Route path='/organizerprofile' element={<ProtectedRoute element={<OrganizerProfile />} allowedRoles={['ORGANIZER']} />} />
         <Route path='/createworkshop' element={<ProtectedRoute element={<CreateWorkshop />} allowedRoles={['ORGANIZER']} />} />
         <Route path='/editworkshop/:id' element={<ProtectedRoute element={<EditWorkshop />} allowedRoles={['ORGANIZER']} />} />
@@ -116,7 +114,7 @@ const App = () => {
         <Route path='/userlist' element={<ProtectedRoute element={<UserList />} allowedRoles={['ADMIN']} />} />
         <Route path='/bloglist' element={<ProtectedRoute element={<BlogList />} allowedRoles={['ADMIN']} />} />
         <Route path='/requestlist' element={<ProtectedRoute element={<RequestList />} allowedRoles={['ADMIN']} />} />
-        <Route path='/requestdetail/:id' element={<ProtectedRoute element={<RequestDetail />} allowedRoles={['ADMIN']} />} />
+        <Route path='/requestdetail/:workshopId' element={<ProtectedRoute element={<RequestDetail />} allowedRoles={['ADMIN']} />} />
         <Route path='/admindashboard' element={<ProtectedRoute element={<AdminDashboard />} allowedRoles={['ADMIN']} />} />
         <Route path='/blogcreate' element={<ProtectedRoute element={<BlogCreate />} allowedRoles={['ADMIN']} />} />
         <Route path='/blogedit/:id' element={<ProtectedRoute element={<BlogEdit />} allowedRoles={['ADMIN']} />} />

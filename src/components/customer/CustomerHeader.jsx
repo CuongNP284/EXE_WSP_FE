@@ -65,7 +65,6 @@ const CustomerHeader = () => {
                 <Link to="/blog" className="text-gray-600 hover:text-blue-600">Blog</Link>
                 <Link to="/faq" className="text-gray-600 hover:text-blue-600">FAQs</Link>
                 <Link to="/aboutus" className="text-gray-600 hover:text-blue-600">Về chúng tôi</Link>
-                <Link to="/myworkshop" className="text-gray-600 hover:text-blue-600">Tạo sự kiện</Link>
                 <Dropdown
                     menu={{
                         items,

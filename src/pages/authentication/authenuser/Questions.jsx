@@ -1,37 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowRight, CheckCircle, Home } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ApiService from '../../../service/ApiService';
+import { useNavigate } from 'react-router-dom';
 
 const Questions = () => {
     const [currentStep, setCurrentStep] = useState(0);
     const [answers, setAnswers] = useState({
         hobbyTypes: [],
-        timeSpent: '',
-        preferredEnvironment: '',
-        socialPreference: '',
-        learningPreference: '',
     });
     const [direction, setDirection] = useState('forward');
     const [completed, setCompleted] = useState(false);
+    const [categories, setCategories] = useState([]);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            const response = await ApiService.getAllCategories();
+            if (response.status === 200 && response.data) {
+                setCategories(response.data.data.items.map(item => ({
+                    id: item.categoryId,
+                    name: item.name,
+                })));
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const questions = [
         {
             id: 'hobbyTypes',
             question: 'Bạn yêu thích những loại sở thích nào?',
             type: 'checkbox',
-            options: [
-                'Nghệ thuật sáng tạo (Vẽ, Tô màu, v.v.)',
-                'Âm nhạc (Chơi nhạc cụ, Hát)',
-                'Thể thao & Hoạt động thể chất',
-                'Đọc sách & Viết lách',
-                'Công nghệ & Trò chơi điện tử',
-                'Nấu ăn & Ẩm thực',
-                'Làm vườn & Chăm sóc cây',
-                'Du lịch & Khám phá',
-                'Sưu tầm (Tem, Thẻ, v.v.)',
-                'Tự làm đồ & Thủ công',
-            ],
-        },        
+            options: categories.map(cat => cat.name),
+        },
     ];
 
     const handleCheckboxChange = (questionId, option) => {
@@ -48,39 +50,37 @@ const Questions = () => {
         });
     };
 
-    const handleRadioChange = (questionId, option) => {
-        setAnswers((prev) => ({
-            ...prev,
-            [questionId]: option,
-        }));
-    };
-
-    const nextQuestion = () => {
+    const nextQuestion = async () => {
         if (currentStep < questions.length - 1) {
             setDirection('forward');
             setCurrentStep((prev) => prev + 1);
         } else {
-            // Survey completed
             setDirection('forward');
+            const categoryIds = categories
+                .filter(cat => answers.hobbyTypes.includes(cat.name))
+                .map(cat => ({ categoryId: cat.id }));
+            if (categoryIds.length > 0) {
+                await Promise.all(categoryIds.map(data => ApiService.handleFavouriteCategory(data)));
+            }
             setCompleted(true);
+            navigate('/');
         }
     };
 
     const skipSurvey = () => {
         setDirection('forward');
         setCompleted(true);
+        navigate('/');
     };
 
     const isNextDisabled = () => {
         const currentQuestion = questions[currentStep];
         if (currentQuestion.type === 'checkbox') {
             return (answers[currentQuestion.id] || []).length === 0;
-        } else {
-            return !answers[currentQuestion.id];
         }
+        return false;
     };
 
-    // Animation variants
     const pageVariants = {
         enter: (direction) => ({
             x: direction === 'forward' ? '100%' : '-100%',
@@ -102,7 +102,6 @@ const Questions = () => {
         duration: 0.4,
     };
 
-    // Animation for checkbox and radio selection
     const selectionVariants = {
         unselected: { scale: 1 },
         selected: { scale: 1.05 },
@@ -113,29 +112,24 @@ const Questions = () => {
         unchecked: { scale: 1, backgroundColor: 'transparent', borderColor: '#9ca3af' }
     };
 
-    const radioVariants = {
-        checked: { scale: 1 },
-        unchecked: { scale: 0 }
-    };
-
     return (
         <motion.div
             className="min-h-screen flex items-center justify-center p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6 }}
+            style={{ backgroundImage: `url('https://images.stockcake.com/public/6/5/4/6548b764-14da-4bc1-9adc-4190de4bce84_large/crafting-workshop-fun-stockcake.jpg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
         >
             <div className="w-full max-w-3xl">
                 <AnimatePresence mode="wait" custom={direction}>
                     {!completed ? (
                         <motion.div
                             key="survey"
-                            className="bg-white rounded-2xl shadow-xl overflow-hidden"
+                            className="bg-white rounded-2xl shadow-xl overflow-hidden bg-opacity-90"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5 }}
                         >
-                            {/* Progress bar */}
                             <motion.div
                                 className="w-full bg-gray-200 h-2"
                                 initial={{ opacity: 0 }}
@@ -172,7 +166,7 @@ const Questions = () => {
                                         </motion.h2>
 
                                         <div className="space-y-4 mb-8">
-                                            {questions[currentStep].type === 'checkbox' ? (
+                                            {questions[currentStep].type === 'checkbox' && (
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     {questions[currentStep].options.map((option, optionIndex) => {
                                                         const isSelected = (answers[questions[currentStep].id] || []).includes(option);
@@ -180,8 +174,8 @@ const Questions = () => {
                                                             <motion.div
                                                                 key={option}
                                                                 className={`p-4 border rounded-lg cursor-pointer ${isSelected
-                                                                        ? 'border-blue-500 bg-blue-50'
-                                                                        : 'border-gray-200 hover:border-blue-300'
+                                                                    ? 'border-blue-500 bg-blue-50'
+                                                                    : 'border-gray-200 hover:border-blue-300'
                                                                     }`}
                                                                 onClick={() =>
                                                                     handleCheckboxChange(questions[currentStep].id, option)
@@ -203,8 +197,8 @@ const Questions = () => {
                                                                 <div className="flex items-center">
                                                                     <motion.div
                                                                         className={`w-5 h-5 border rounded mr-3 flex items-center justify-center ${isSelected
-                                                                                ? 'bg-blue-500 border-blue-500'
-                                                                                : 'border-gray-400'
+                                                                            ? 'bg-blue-500 border-blue-500'
+                                                                            : 'border-gray-400'
                                                                             }`}
                                                                         variants={checkboxVariants}
                                                                         animate={isSelected ? "checked" : "unchecked"}
@@ -233,60 +227,13 @@ const Questions = () => {
                                                         );
                                                     })}
                                                 </div>
-                                            ) : (
-                                                <div className="space-y-3">
-                                                    {questions[currentStep].options.map((option, optionIndex) => {
-                                                        const isSelected = answers[questions[currentStep].id] === option;
-                                                        return (
-                                                            <motion.div
-                                                                key={option}
-                                                                className={`p-4 border rounded-lg cursor-pointer ${isSelected
-                                                                        ? 'border-blue-500 bg-blue-50'
-                                                                        : 'border-gray-200 hover:border-blue-300'
-                                                                    }`}
-                                                                onClick={() => handleRadioChange(questions[currentStep].id, option)}
-                                                                variants={selectionVariants}
-                                                                whileHover={{ scale: 1.02 }}
-                                                                whileTap={{ scale: 0.98 }}
-                                                                initial={{ opacity: 0, y: 10 }}
-                                                                animate={{
-                                                                    ...(isSelected ? selectionVariants.selected : selectionVariants.unselected),
-                                                                    opacity: 1,
-                                                                    y: 0
-                                                                }}
-                                                                transition={{
-                                                                    delay: 0.1 + optionIndex * 0.05,
-                                                                    duration: 0.3
-                                                                }}
-                                                            >
-                                                                <div className="flex items-center">
-                                                                    <div
-                                                                        className={`w-5 h-5 border rounded-full mr-3 flex items-center justify-center ${isSelected
-                                                                                ? 'border-blue-500'
-                                                                                : 'border-gray-400'
-                                                                            }`}
-                                                                    >
-                                                                        <motion.div
-                                                                            className="w-3 h-3 rounded-full bg-blue-500"
-                                                                            variants={radioVariants}
-                                                                            animate={isSelected ? "checked" : "unchecked"}
-                                                                            initial={false}
-                                                                            transition={{ duration: 0.2 }}
-                                                                        />
-                                                                    </div>
-                                                                    <span className="text-gray-700">{option}</span>
-                                                                </div>
-                                                            </motion.div>
-                                                        );
-                                                    })}
-                                                </div>
                                             )}
                                         </div>
 
                                         <motion.div
                                             className="flex justify-between"
                                             initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
+                                            animate={{ opacity: 1}}
                                             transition={{ delay: 0.4, duration: 0.3 }}
                                         >
                                             <motion.button
@@ -301,8 +248,8 @@ const Questions = () => {
                                                 onClick={nextQuestion}
                                                 disabled={isNextDisabled()}
                                                 className={`px-6 py-3 rounded-lg text-white font-medium flex items-center ${isNextDisabled()
-                                                        ? 'bg-gray-300 cursor-not-allowed'
-                                                        : 'bg-blue-600 hover:bg-blue-700'
+                                                    ? 'bg-gray-300 cursor-not-allowed'
+                                                    : 'bg-blue-600 hover:bg-blue-700'
                                                     }`}
                                                 style={!isNextDisabled() ? { backgroundColor: '#0A1338' } : {}}
                                                 whileHover={!isNextDisabled() ? { scale: 1.05 } : {}}
@@ -317,10 +264,9 @@ const Questions = () => {
                             </div>
                         </motion.div>
                     ) : (
-                        // Thank you screen
                         <motion.div
                             key="completion"
-                            className="bg-white rounded-2xl shadow-xl overflow-hidden"
+                            className="bg-white rounded-2xl shadow-xl overflow-hidden bg-opacity-90"
                             custom={direction}
                             variants={pageVariants}
                             initial="enter"
@@ -359,7 +305,7 @@ const Questions = () => {
                                     Chúng tôi rất trân trọng thời gian bạn đã dành để hoàn thành khảo sát này. Những câu trả lời của bạn sẽ giúp chúng tôi tạo ra những trải nghiệm tốt hơn.
                                 </motion.p>
                                 <motion.button
-                                    onClick={() => console.log('Navigate to homepage')}
+                                    onClick={() => navigate('/')}
                                     className="px-8 py-3 rounded-lg text-white font-medium flex items-center"
                                     style={{ backgroundColor: '#0A1338' }}
                                     initial={{ opacity: 0, y: 20 }}
@@ -376,7 +322,6 @@ const Questions = () => {
                     )}
                 </AnimatePresence>
 
-                {/* Question indicator */}
                 {!completed && (
                     <div className="mt-6 flex justify-center">
                         {questions.map((_, index) => (

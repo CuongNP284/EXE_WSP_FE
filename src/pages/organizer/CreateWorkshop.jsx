@@ -29,7 +29,7 @@ const CreateWorkshop = () => {
             const response = await ApiService.getAllCategories();
             if (response.status === 200) {
                 const mappedCategories = response.data.data.items.map(item => ({
-                    id: item.id || item.categoryId, // Thay bằng trường phù hợp
+                    id: item.id || item.categoryId,
                     name: item.name
                 }));
                 setCategories(mappedCategories);
@@ -120,19 +120,31 @@ const CreateWorkshop = () => {
                 try {
                     const response = await ApiService.createWorkshop(workshopData);
                     if (response.status === 200) {
-                        message.success('Workshop created successfully');
-                        setFormData({
-                            title: '',
-                            description: '',
-                            categoryId: '',
-                            location: '',
-                            introVideoUrl: '',
-                            durationMinutes: '',
-                            price: ''
+                        // Show SweetAlert2 success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Thành công!',
+                            text: 'Workshop đã được tạo thành công. Vui lòng chờ bộ phận kiểm duyệt workshop duyệt workshop của bạn.',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            // Reset form and navigate back to step 1
+                            setFormData({
+                                title: '',
+                                description: '',
+                                categoryId: '',
+                                location: '',
+                                introVideoUrl: '',
+                                durationMinutes: '',
+                                price: ''
+                            });
+                            setCurrentStep(1);
                         });
-                        setCurrentStep(1);
                     } else {
-                        message.error(response.message);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: response.message || 'Không thể tạo workshop. Vui lòng thử lại.',
+                        });
                     }
                 } catch (error) {
                     Swal.fire({

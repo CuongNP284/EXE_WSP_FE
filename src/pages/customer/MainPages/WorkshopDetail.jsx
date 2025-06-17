@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, MapPin, Users, Eye, Star, Phone, Mail, ArrowLeft } from 'lucide-react';
 import CustomerHeader from '../../../components/customer/CustomerHeader';
 import CustomeFooter from '../../../components/customer/CustomeFooter';
@@ -8,68 +8,24 @@ import { message } from 'antd';
 
 const WorkshopDetail = () => {
     const { workshopId } = useParams();
+    const navigate = useNavigate();
     const [workshop, setWorkshop] = useState(null);
     const [organizer, setOrganizer] = useState(null);
     const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState('2024-03-09');
-
-    // Hardcoded reviews and similar workshops (no API provided)
-    const reviews = [
-        {
-            id: 1,
-            name: "Nguyễn Huyền Châu",
-            rating: 4.7,
-            avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b789?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
-            comment: "Khóa đào tạo này rất dễ chịu tương lai chia mentor rất ngá để chương xã chạy cảnh vì tính"
-        },
-        {
-            id: 2,
-            name: "Hoàng Minh Khoa",
-            rating: 4.7,
-            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
-            comment: "Khóa thi năng Design kọn tính rất dễy án giúp án và mỗi lý thuyết rất thấy. Mình đã học 5 days, đượt 4 buổi về"
-        }
-    ];
-
-    const similarWorkshops = [
-        {
-            id: 1,
-            name: "LUYỆN TẬP THÂN KHỎE VỚI YOGA",
-            description: "Cung cấp các liệu pháp khỏe Yoga cho mọi người.",
-            image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-            price: "500,000 VNĐ",
-            originalPrice: "600,000 VNĐ",
-            date: "Thứ 2, 04/03",
-            location: "128/37A Lê Văn Duyệt, Bình Thạnh"
-        },
-        {
-            id: 2,
-            name: "TRỊ LIỆU CHUỖNG XOAY",
-            description: "Sức nóng lướp nướng con tốn số nừng dong pain thú",
-            image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-            price: "500,000 VNĐ",
-            date: "Thứ 2, 09/03",
-            location: "128/37A Lê Văn Duyệt, Bình Thạnh"
-        },
-        {
-            id: 3,
-            name: "HUMAN DESIGN READING",
-            description: "Hiểu mình - cảm joy jini",
-            image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-            price: "500,000 VNĐ",
-            date: "Thứ 4, 04/03",
-            location: "128/37A Lê Văn Duyệt, Bình Thạnh"
-        }
-    ];
+    const [reviews, setReviews] = useState([]);
+    const [similarWorkshops, setSimilarWorkshops] = useState([]);
+    const [newReview, setNewReview] = useState({ rating: 0, comment: '' });
+    const [userCanReview, setUserCanReview] = useState(false);
+    const userId = localStorage.getItem('userId');
 
     // Hardcoded available dates (no API provided)
     const availableDates = [
         { date: '2024-03-09', time: '14h00 - 16h30', day: 'Thứ 2' },
         { date: '2024-03-12', time: '14h00 - 16h30', day: 'Thứ 4' },
-        { date: '2024-03-14', time: '14h00 - 16h30', day: 'Thứ 6' }
+        { date: '2024-03-14', time: '14h00 - 16h30', day: 'Thứ 6' },
     ];
 
-    // Map status code to display text
     const mapStatusToDisplay = (status) => {
         switch (status) {
             case 0: return 'OFFLINE';
@@ -78,12 +34,10 @@ const WorkshopDetail = () => {
         }
     };
 
-    // Fetch workshop and organizer details
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                // Fetch workshop details
                 const res = await ApiService.getWorkshopById(workshopId);
                 const workshopData = res?.data?.data;
 
@@ -93,16 +47,14 @@ const WorkshopDetail = () => {
                     return;
                 }
 
-                // Map status and add hardcoded available dates
                 const mappedWorkshop = {
                     ...workshopData,
                     status: mapStatusToDisplay(workshopData.status),
-                    availableDates
+                    availableDates,
                 };
                 setWorkshop(mappedWorkshop);
 
-                // Optionally fetch organizer (commented out to avoid error)
-                /* const organizerId = workshopData.organizerId;
+                const organizerId = workshopData.organizerId;
                 if (organizerId) {
                     const orgRes = await ApiService.getUserById(organizerId);
                     const organizerData = orgRes?.data?.data;
@@ -112,8 +64,29 @@ const WorkshopDetail = () => {
                         message.warning('Không thể tải thông tin người tổ chức.');
                         setOrganizer(null);
                     }
-                } */
-                setOrganizer({ firstName: 'Unknown', lastName: 'Organizer', email: 'contact@example.com', phoneNumber: '090-123-4567' }); // Fallback data
+                }
+
+                // Check if user has completed booking and payment
+                const ticketsResponse = await ApiService.getWorkshopTickets();
+                if (ticketsResponse.status === 200 && ticketsResponse.data) {
+                    const userTickets = ticketsResponse.data.data.items.filter(
+                        ticket => ticket.userId === userId && ticket.workshopId === workshopId && ticket.paymentStatus === 'Completed'
+                    );
+                    setUserCanReview(userTickets.length > 0);
+                }
+
+                // Fetch reviews
+                const reviewsResponse = await ApiService.getAllReviews({ workshopId });
+                if (reviewsResponse.status === 200 && reviewsResponse.data) {
+                    setReviews(reviewsResponse.data.data.items || []);
+                }
+
+                // Fetch similar workshops
+                const workshopsResponse = await ApiService.getAllWorkshops();
+                if (workshopsResponse.status === 200 && workshopsResponse.data) {
+                    const filteredWorkshops = workshopsResponse.data.data.items.filter(w => w.workshopId !== workshopId);
+                    setSimilarWorkshops(filteredWorkshops.slice(0, 3));
+                }
             } catch (err) {
                 console.error('Lỗi khi tải dữ liệu workshop:', err);
                 message.error('Đã xảy ra lỗi trong quá trình tải dữ liệu.');
@@ -128,11 +101,66 @@ const WorkshopDetail = () => {
             message.error('Không tìm thấy ID workshop.');
             setLoading(false);
         }
-    }, [workshopId]);
+    }, [workshopId, userId]);
 
     const formatDate = (dateStr) => {
         const date = new Date(dateStr);
         return date.toLocaleDateString('vi-VN');
+    };
+
+    const handleReviewSubmit = async (e) => {
+        e.preventDefault();
+        if (!userCanReview) {
+            message.error('Bạn cần hoàn thành đặt vé và thanh toán để để lại đánh giá.');
+            return;
+        }
+
+        const reviewData = {
+            userId: userId,
+            workshopId: workshopId,
+            rating: newReview.rating,
+            comment: newReview.comment,
+        };
+
+        try {
+            const response = await ApiService.createReview(reviewData);
+            if (response.status === 200) {
+                message.success('Đánh giá đã được gửi thành công.');
+                setNewReview({ rating: 0, comment: '' });
+                const reviewsResponse = await ApiService.getAllReviews({ workshopId });
+                if (reviewsResponse.status === 200 && reviewsResponse.data) {
+                    setReviews(reviewsResponse.data.data.items || []);
+                }
+            } else {
+                message.error(response.message || 'Không thể gửi đánh giá.');
+            }
+        } catch (error) {
+            message.error('Đã xảy ra lỗi khi gửi đánh giá.');
+            console.error(error);
+        }
+    };
+
+    const handleRatingChange = (rating) => {
+        setNewReview({ ...newReview, rating });
+    };
+
+    const handleBookNow = () => {
+        if (workshop && userId) {
+            const workshopData = {
+                workshopId: workshop.workshopId,
+                title: workshop.title,
+                instructor: organizer ? `${organizer.firstName} ${organizer.lastName}` : 'Unknown Organizer',
+                date: selectedDate,
+                time: availableDates.find(d => d.date === selectedDate)?.time || 'N/A',
+                location: workshop.location,
+                originalPrice: workshop.price,
+                image: workshop.image || 'https://thienanagency.com/photos/all/khac/workshop-painting.jpg'
+            };
+            localStorage.setItem('selectedWorkshop', JSON.stringify(workshopData));
+            navigate('/checkout');
+        } else {
+            message.error('Vui lòng đăng nhập để đặt vé.');
+        }
     };
 
     if (loading) {
@@ -191,6 +219,13 @@ const WorkshopDetail = () => {
                                         <p className="text-gray-600">{workshop.location}</p>
                                     </div>
                                 </div>
+                                <div className="flex items-start">
+                                    <Clock size={20} className="text-gray-400 mr-3 mt-1" />
+                                    <div>
+                                        <p className="font-medium text-gray-900">Thời lượng</p>
+                                        <p className="text-gray-600">{workshop.durationMinutes} phút</p>
+                                    </div>
+                                </div>
                                 {organizer && (
                                     <>
                                         <div className="flex items-start">
@@ -211,6 +246,22 @@ const WorkshopDetail = () => {
                                 )}
                             </div>
                         </div>
+
+                        {/* Intro Video */}
+                        {workshop.introVideoUrl && (
+                            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                                <h2 className="text-xl font-semibold text-gray-900 mb-4">VIDEO GIỚI THIỆU</h2>
+                                <div className="relative" style={{ paddingBottom: '56.25%' /* 16:9 Aspect Ratio */ }}>
+                                    <video
+                                        className="absolute top-0 left-0 w-full h-full rounded-lg"
+                                        controls
+                                        src={workshop.introVideoUrl}
+                                    >
+                                        Trình duyệt của bạn không hỗ trợ video.
+                                    </video>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Description */}
                         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
@@ -245,27 +296,66 @@ const WorkshopDetail = () => {
                                 ĐÁNH GIÁ
                                 <span className="text-sm text-gray-500 ml-2">Đánh giá gần đây</span>
                             </h2>
-                            <div className="space-y-4">
+                            <div className="space-y-4 mb-6">
                                 {reviews.map((review) => (
                                     <div key={review.id} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
                                         <img
-                                            src={review.avatar}
+                                            src={review.avatar || 'https://images.unsplash.com/photo-1494790108755-2616b612b789?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80'}
                                             alt={review.name}
                                             className="w-12 h-12 rounded-full object-cover"
                                         />
                                         <div className="flex-1">
                                             <div className="flex items-center justify-between mb-2">
-                                                <h4 className="font-medium text-gray-900">{review.name}</h4>
+                                                <h4 className="font-medium text-gray-900">{review.name || 'Anonymous'}</h4>
                                                 <div className="flex items-center">
                                                     <Star size={16} className="text-yellow-500 fill-current mr-1" />
-                                                    <span className="text-sm font-medium text-gray-900">{review.rating}</span>
+                                                    <span className="text-sm font-medium text-gray-900">{review.rating || 0}</span>
                                                 </div>
                                             </div>
-                                            <p className="text-gray-600 text-sm">{review.comment}</p>
+                                            <p className="text-gray-600 text-sm">{review.comment || 'No comment'}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
+
+                            {/* Review Form */}
+                            {ApiService.isAuthenticated() && (
+                                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Để lại đánh giá của bạn</h3>
+                                    <form onSubmit={handleReviewSubmit}>
+                                        <div className="mb-4">
+                                            <label className="block text-gray-700 font-medium mb-2">Đánh giá của bạn</label>
+                                            <div className="flex space-x-1">
+                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                    <Star
+                                                        key={star}
+                                                        size={24}
+                                                        className={`cursor-pointer ${newReview.rating >= star ? 'text-yellow-500 fill-current' : 'text-gray-300'}`}
+                                                        onClick={() => handleRatingChange(star)}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="block text-gray-700 font-medium mb-2">Bình luận</label>
+                                            <textarea
+                                                value={newReview.comment}
+                                                onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                rows="4"
+                                                placeholder="Viết nhận xét của bạn..."
+                                            />
+                                        </div>
+                                        <button
+                                            type="submit"
+                                            className="w-full bg-[#091238] text-white py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors"
+                                            disabled={!userCanReview || !newReview.rating}
+                                        >
+                                            Gửi đánh giá
+                                        </button>
+                                    </form>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -280,14 +370,13 @@ const WorkshopDetail = () => {
                                     <MapPin size={14} className="mr-1" />
                                     <span>{workshop.location}</span>
                                 </div>
-                                <div className="flex items-center text-sm opacity-80">
-                                    <Calendar size={14} className="mr-1" />
-                                    <span>{formatDate(workshop.createdAt)}</span>
-                                </div>
                             </div>
                             <div className="mb-6">
                                 <div className="text-2xl font-bold mb-2">Giá từ: {workshop.price.toLocaleString('vi-VN')} VNĐ</div>
-                                <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                                <button
+                                    onClick={handleBookNow}
+                                    className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+                                >
                                     ĐẶT VÉ NGAY
                                 </button>
                             </div>
@@ -301,17 +390,17 @@ const WorkshopDetail = () => {
                     <p className="text-gray-600 mb-6">Dựa trên thể loại workshop bạn đang xem</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {similarWorkshops.map((workshop) => (
-                            <div key={workshop.id} className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
+                            <div key={workshop.workshopId} className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
                                 <div className="relative">
                                     <img
-                                        src={workshop.image}
+                                        src={workshop.image || 'https://thienanagency.com/photos/all/khac/workshop-painting.jpg'}
                                         alt={workshop.name}
                                         className="w-full h-48 object-cover"
                                     />
                                 </div>
                                 <div className="p-6">
                                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                        {workshop.name}
+                                        {workshop.title}
                                     </h3>
                                     <p className="text-gray-600 text-sm mb-4">
                                         {workshop.description}
@@ -319,7 +408,7 @@ const WorkshopDetail = () => {
                                     <div className="space-y-2 mb-4">
                                         <div className="flex items-center text-sm text-gray-600">
                                             <Calendar size={16} className="mr-2 text-gray-700" />
-                                            <span>{workshop.date}</span>
+                                            <span>{new Date(workshop.createdAt).toLocaleDateString('vi-VN')}</span>
                                         </div>
                                         <div className="flex items-center text-sm text-gray-600">
                                             <MapPin size={16} className="mr-2 text-gray-700" />
@@ -328,14 +417,14 @@ const WorkshopDetail = () => {
                                     </div>
                                     <div className="mb-4">
                                         <div className="flex items-center space-x-2">
-                                            <span className="text-lg font-bold text-[#091238]">{workshop.price}</span>
+                                            <span className="text-lg font-bold text-[#091238]">{workshop.price.toLocaleString('vi-VN')} VNĐ</span>
                                             {workshop.originalPrice && (
                                                 <span className="text-sm text-gray-500 line-through">{workshop.originalPrice}</span>
                                             )}
                                         </div>
                                     </div>
                                     <Link
-                                        to={`/workshopdetail`}
+                                        to={`/workshopdetail/${workshop.workshopId}`}
                                         className="w-full bg-[#091238] hover:bg-opacity-90 text-white py-3 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 no-underline"
                                     >
                                         <Eye size={16} />

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export default class ApiService {
-    static BASE_URL = "https://localhost:7031";
+    static BASE_URL = "https://workshophub-ejcbbfc6bjdsbgaj.southeastasia-01.azurewebsites.net";
 
     static getHeader() {
         const token = localStorage.getItem("token");
@@ -1563,24 +1563,31 @@ export default class ApiService {
 
     /**
      * Create a payment
-     * @param {Object} paymentData - The payment data containing bookingId, amount, and paymentMethod
+     * @param {Object} paymentData - The payment data containing code, desc, amount, description, reference, transactionDateTime, currency, paymentLinkId, counterAccountBankId, counterAccountName, counterAccountNumber, virtualAccountNumber, signature
      * @returns {Promise<Object>} Response object with status and data/message
      */
     static async createPayment(paymentData) {
         try {
-            if (!paymentData.bookingId || paymentData.amount === undefined || !paymentData.paymentMethod) {
-                throw new Error("Booking ID, amount, and payment method are required");
+            if (!paymentData.code || !paymentData.desc || !paymentData.signature ||
+                !paymentData.data || !paymentData.data.amount || !paymentData.data.reference || !paymentData.data.transactionDateTime ||
+                !paymentData.data.currency || !paymentData.data.paymentLinkId ||
+                !paymentData.data.counterAccountBankId || !paymentData.data.counterAccountName ||
+                !paymentData.data.counterAccountNumber || !paymentData.data.virtualAccountNumber) {
+                throw new Error("All payment fields are required");
             }
+
 
             console.log("Creating new payment with data:", paymentData);
 
             const response = await axios.post(
-                `${this.BASE_URL}/api/v1/Payment`,
+                `${this.BASE_URL}/api/v1/Payment/transfer`,
                 paymentData,
                 { headers: this.getHeader() }
             );
 
             console.log("Create payment response:", response.data);
+
+            console.log("Payload to be sent:", JSON.stringify(paymentData, null, 2));
 
             return {
                 status: 200,
@@ -1646,6 +1653,61 @@ export default class ApiService {
             return {
                 status: error.response?.status || 400,
                 message: error.response?.data?.message || "Failed to fetch organizer analytics"
+            };
+        }
+    }
+
+    static async loginWithGoogle(loginData) {
+        try {
+            const response = await axios.post(`${this.BASE_URL}/api/v1/User/login/google`, loginData);
+            if (response && response.data && response.data.success) {
+                localStorage.setItem("token", response.data.data.accessToken);
+                const userInfoResponse = await this.getLoggedInUserInfo();
+                if (userInfoResponse.status === 200 && userInfoResponse.data) {
+                    localStorage.setItem("userRole", userInfoResponse.data.role || "USER");
+                    localStorage.setItem("userId", userInfoResponse.data.id);
+                } else {
+                    console.error("Failed to fetch user role and id, defaulting to USER");
+                    localStorage.setItem("userRole", "USER");
+                    throw new Error("Failed to fetch user info");
+                }
+                return {
+                    status: 200,
+                    data: response.data.data,
+                    message: "Google login successful"
+                };
+            } else {
+                return {
+                    status: response.status || 400,
+                    message: response.data.message || "Google login failed"
+                };
+            }
+        } catch (error) {
+            console.error("Google login error:", error);
+            return {
+                status: error.response?.status || 400,
+                message: error.response?.data?.message || "Google login failed"
+            };
+        }
+    }
+
+    static async getRecommendedWorkshops(params = {}) {
+        try {
+            const response = await axios.get(`${this.BASE_URL}/api/v1/workshop/recommend`, {
+                headers: this.getHeader(),
+                params: params
+            });
+            console.log("Fetched recommended workshops:", response.data);
+            return {
+                status: 200,
+                data: response.data,
+                message: "Recommended workshops fetched successfully"
+            };
+        } catch (error) {
+            console.error("Error fetching recommended workshops:", error);
+            return {
+                status: error.response?.status || 400,
+                message: error.response?.data?.message || "Failed to fetch recommended workshops"
             };
         }
     }

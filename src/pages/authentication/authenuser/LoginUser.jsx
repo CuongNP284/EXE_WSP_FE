@@ -21,23 +21,19 @@ const LoginUser = () => {
       console.log('API Response:', response);
 
       if (response.status === 200 && response.data && response.data.accessToken) {
-        // Fetch user info to get userId and role
         const userInfoResponse = await ApiService.getLoggedInUserInfo();
         if (userInfoResponse.status === 200 && userInfoResponse.data) {
-          // Store userId in localStorage
           localStorage.setItem('userId', userInfoResponse.data.id);
         } else {
           throw new Error('Failed to fetch user info after login');
         }
 
-        // Success message
         await Swal.fire({
           title: 'Success',
           text: 'Login successful!',
           icon: 'success'
         });
 
-        // Redirect based on role
         const role = userInfoResponse?.data?.role || "USER";
         switch (role) {
           case 'ADMIN':
@@ -63,21 +59,27 @@ const LoginUser = () => {
 
   const navigate = useNavigate();
 
+  const handleGoogleLogin = () => {
+    const clientId = '1098549759457-50jvav67ctpd88frui4bqh6qhged86kh.apps.googleusercontent.com';
+    const redirectUri = encodeURIComponent(window.location.origin + '/login');
+    const scope = encodeURIComponent('openid email profile');
+
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline`;
+
+    window.location.href = authUrl;
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjfeU49APx-oCOoGEw3u3P3M5ccF4jpufV82pwgMcsfPfsl4jaK54zeU-G0UjxTBGaWMi5rOcQ1NozXp5wZz2fyH_D3oO8lpras5n3mUjLMrQzmtJYw75buWGIFcB2czx93OsVq5hZecHE/s1600/work-shop-la-gi.jpg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
       <div className="w-full max-w-md">
-        {/* Thẻ */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Tiêu đề */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden bg-opacity-90">
           <div className="px-8 pt-8 pb-4">
             <h1 className="text-3xl font-bold text-gray-800 text-center">Đăng Nhập</h1>
             <p className="text-center text-gray-600 mt-2">Đăng nhập vào tài khoản của bạn</p>
           </div>
 
-          {/* Container Form */}
           <div className="px-8 py-6">
             <form onSubmit={handleSubmit}>
-              {/* Trường Email */}
               <div className="mb-6">
                 <label className="block text-gray-600 font-medium mb-2">Địa Chỉ Email</label>
                 <div className="relative">
@@ -93,7 +95,6 @@ const LoginUser = () => {
                 </div>
               </div>
 
-              {/* Trường Mật Khẩu */}
               <div className="mb-6">
                 <div className="flex mb-2">
                   <label className="text-gray-600 font-medium">Mật Khẩu</label>
@@ -111,17 +112,14 @@ const LoginUser = () => {
                 </div>
               </div>
 
-              {/* Hộp kiểm Ghi nhớ */}
               <div className='flex justify-between mb-2'>
                 <div className="mb-6 flex items-center">
-
                 </div>
                 <a href="/resetpassword" className="text-sm text-blue-900 hover:underline">
                   Bạn quên mật khẩu của mình?
                 </a>
               </div>
 
-              {/* Nút Gửi */}
               <button
                 type="submit"
                 className="w-full py-3 px-4 text-white font-bold rounded-lg shadow-md transition-colors duration-300 transform hover:scale-105"
@@ -131,8 +129,7 @@ const LoginUser = () => {
               </button>
             </form>
 
-            {/* Tùy chọn đăng nhập mạng xã hội */}
-            <div className="mt-8">
+            {/* <div className="mt-8">
               <div className="flex items-center mb-6">
                 <div className="flex-grow border-t border-gray-300"></div>
                 <span className="mx-4 text-gray-500">hoặc tiếp tục với</span>
@@ -140,7 +137,10 @@ const LoginUser = () => {
               </div>
 
               <div className="grid gap-4">
-                <button className="flex justify-center items-center py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-300">
+                <button
+                  onClick={handleGoogleLogin}
+                  className="flex justify-center items-center py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-300"
+                >
                   <svg className="w-6 h-6" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
@@ -161,9 +161,8 @@ const LoginUser = () => {
                   </svg>
                 </button>
               </div>
-            </div>
+            </div> */}
 
-            {/* Liên kết đăng ký */}
             <div className="text-center mt-8">
               <p className="text-gray-600">
                 Chưa có tài khoản?{' '}

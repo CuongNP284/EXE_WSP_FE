@@ -8,6 +8,7 @@ import LoginUser from './pages/authentication/authenuser/LoginUser';
 import SignupUser from './pages/authentication/authenuser/SignupUser';
 import ResetPasswordPage from './pages/authentication/authenuser/ResetPassword';
 import EmailVerificationPage from './pages/authentication/authenuser/EmailVerify';
+import GoogleCallback from './pages/authentication/authenuser/GoogleCallBack';
 
 // Customer Import
 import Homepage from './pages/customer/MainPages/Homepage';
@@ -15,6 +16,7 @@ import BlogUser from './pages/customer/MainPages/BlogUser';
 import BlogDetailUser from './pages/customer/MainPages/BlogDetailUser';
 import WorkshopDetail from './pages/customer/MainPages/WorkshopDetail';
 import UserProfile from './pages/customer/MainPages/UserProfile';
+import Checkout from './pages/customer/MainPages/Checkout';
 
 import AboutUs from './pages/customer/AdditionPages/AboutUs';
 import LegalTerms from './pages/customer/AdditionPages/LegalTerms';
@@ -85,6 +87,7 @@ const App = () => {
         <Route path='/resetpassword' element={<ResetPasswordPage />} />
         <Route path='/emailverify' element={<EmailVerificationPage />} />
         <Route path='/questions' element={<Questions />} />
+        <Route path='/login' element={<GoogleCallback />} />
 
         {/* Customer Routes - Accessible to guests and authenticated users */}
         <Route path='/' element={<ProtectedRoute element={<Homepage />} allowedRoles={['USER']} allowGuest={true} />} />
@@ -92,6 +95,7 @@ const App = () => {
         <Route path="/blog/:id" element={<ProtectedRoute element={<BlogDetailUser />} allowedRoles={['USER']} allowGuest={true} />} />
         <Route path='/workshopdetail/:workshopId' element={<RestrictedRoute element={<WorkshopDetail />} allowedRoles={['USER']} />} />
         <Route path='/userprofile' element={<RestrictedRoute element={<UserProfile />} allowedRoles={['USER']} />} />
+        <Route path='/checkout' element={<RestrictedRoute element={<Checkout />} allowedRoles={['USER']} />} />
         <Route path='/aboutus' element={<ProtectedRoute element={<AboutUs />} allowedRoles={['USER']} allowGuest={true} />} />
         <Route path='/legalterms' element={<ProtectedRoute element={<LegalTerms />} allowedRoles={['USER']} allowGuest={true} />} />
         <Route path='/termsofservice' element={<ProtectedRoute element={<TermsOfService />} allowedRoles={['USER']} allowGuest={true} />} />

@@ -11,10 +11,10 @@ const Homepage = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [categories, setCategories] = useState([]);
   const [workshops, setWorkshops] = useState([]);
+  const [recommendedWorkshops, setRecommendedWorkshops] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Carousel images (kept hardcoded as no API provided)
   const carouselImages = [
     {
       id: 1,
@@ -39,12 +39,10 @@ const Homepage = () => {
     }
   ];
 
-  // Fetch categories and workshops on mount
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch categories
         const categoryResponse = await ApiService.getAllCategories();
         if (categoryResponse.status === 200 && categoryResponse.data) {
           setCategories([
@@ -58,12 +56,18 @@ const Homepage = () => {
           message.error(categoryResponse.message || 'Không thể tải danh mục.');
         }
 
-        // Fetch workshops
         const workshopResponse = await ApiService.getAllWorkshops();
         if (workshopResponse.status === 200 && workshopResponse.data) {
           setWorkshops(workshopResponse.data.data.items);
         } else {
           message.error(workshopResponse.message || 'Không thể tải workshop.');
+        }
+
+        const recommendedResponse = await ApiService.getRecommendedWorkshops();
+        if (recommendedResponse.status === 200 && recommendedResponse.data) {
+          setRecommendedWorkshops(recommendedResponse.data.data.items || []);
+        } else {
+          message.error(recommendedResponse.message || 'Không thể tải workshop theo sở thích.');
         }
       } catch (error) {
         message.error('Lỗi khi tải dữ liệu.');
@@ -76,7 +80,6 @@ const Homepage = () => {
     fetchData();
   }, []);
 
-  // Auto-advance carousel
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
@@ -92,12 +95,10 @@ const Homepage = () => {
     setCurrentSlide((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
   };
 
-  // Filter workshops based on selected category
   const filteredWorkshops = selectedCategory === 'all'
     ? workshops
     : workshops.filter(workshop => workshop.categoryId === selectedCategory);
 
-  // Get top trending workshops (e.g., top 4 by participants)
   const topTrendingWorkshops = [...workshops]
     .sort((a, b) => (b.participants || 0) - (a.participants || 0))
     .slice(0, 4);
@@ -114,9 +115,8 @@ const Homepage = () => {
     <div className="min-h-screen">
       <CustomerHeader />
 
-      {/* Hero Carousel */}
       <section className="py-8 px-4">
-        <div className="relative w-full max-w-6xl mx-auto h-80 md:h-96 overflow-hidden rounded-xl shadow-lg">
+        <div className="relative w-full max-w-7xl mx-auto h-80 md:h-96 overflow-hidden rounded-xl shadow-lg">
           {carouselImages.map((slide, index) => (
             <div
               key={slide.id}
@@ -147,7 +147,6 @@ const Homepage = () => {
             </div>
           ))}
 
-          {/* Navigation Arrows */}
           <button
             onClick={prevSlide}
             className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 text-gray-800 p-3 rounded-full transition-all shadow-lg z-10"
@@ -161,7 +160,6 @@ const Homepage = () => {
             <ChevronRight size={24} />
           </button>
 
-          {/* Dots Indicator */}
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
             {carouselImages.map((_, index) => (
               <button
@@ -175,12 +173,11 @@ const Homepage = () => {
         </div>
       </section>
 
-      {/* Category Filter */}
-      <section className="py-8 px-4">
+      <section className="py-2 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-wrap justify-center gap-4 mb-8">
+          <div className="flex flex-wrap justify-center gap-4 mb-4">
             {categories.map((category) => {
-              const Icon = category.icon || Target; // Fallback icon
+              const Icon = category.icon || Target;
               return (
                 <div key={category.id} className="flex flex-col items-center">
                   <button
@@ -202,8 +199,7 @@ const Homepage = () => {
         </div>
       </section>
 
-      {/* Workshops Section */}
-      <section className="py-8 px-4">
+      <section className="px-4 mb-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-left mb-8">
             <h2 className="text-3xl font-bold text-black mb-4">Workshop Nổi Bật</h2>
@@ -259,11 +255,11 @@ const Homepage = () => {
                 </div>
               ))}
             </div>
-          )}
+          )
+          }
         </div>
       </section>
 
-      {/* Top Trending Workshops Section */}
       <section className="py-8 px-4 bg-amber-100">
         <div className="max-w-7xl mx-auto">
           <div className="text-left mb-8">
@@ -324,7 +320,66 @@ const Homepage = () => {
         </div>
       </section>
 
-      {/* FAQ Section */}
+      <section className="py-8 px-4 bg-[#F5F2EA]">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-left mb-8">
+            <h2 className="text-3xl font-bold text-black mb-4">Workshop Theo Sở Thích</h2>
+          </div>
+
+          {recommendedWorkshops.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">Không có workshop nào theo sở thích của bạn.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {recommendedWorkshops.map((workshop) => (
+                <div key={workshop.workshopId} className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
+                  <div className="relative">
+                    <img
+                      src={workshop.image || 'https://thienanagency.com/photos/all/khac/workshop-painting.jpg'}
+                      alt={workshop.title}
+                      className="w-full h-48 object-cover"
+                    />
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
+                      {workshop.title}
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                      {workshop.description}
+                    </p>
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Calendar size={16} className="mr-2 text-gray-400" />
+                        <span>{new Date(workshop.createdAt).toLocaleDateString('vi-VN')}</span>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Clock size={16} className="mr-2 text-gray-400" />
+                        <span>{workshop.durationMinutes} phút</span>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <MapPin size={16} className="mr-2 text-gray-400" />
+                        <span className="line-clamp-1">{workshop.location}</span>
+                      </div>
+                    </div>
+                    <div className="mb-4">
+                      <span className="text-lg font-bold text-[#091238]">{workshop.price.toLocaleString('vi-VN')} VNĐ</span>
+                    </div>
+                    <Link
+                      to={`/workshopdetail/${workshop.workshopId}`}
+                      className="w-full bg-[#091238] hover:bg-opacity-90 text-white py-3 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 no-underline"
+                    >
+                      <Eye size={16} />
+                      Xem chi tiết
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
       <section className="py-8 px-4 bg-[#F5F2EA]">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -351,7 +406,6 @@ const Homepage = () => {
         </div>
       </section>
 
-      {/* About Us Section */}
       <section className="py-8 px-4 bg-[#A9C1A6]">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

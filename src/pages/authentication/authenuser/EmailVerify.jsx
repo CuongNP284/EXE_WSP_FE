@@ -33,10 +33,10 @@ const EmailVerificationPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url('https://www.shutterstock.com/image-photo/three-young-asian-people-playing-600nw-2081198857.jpg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
       <div className="w-full max-w-md">
         {/* Thẻ */}  
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden bg-opacity-90">
           {/* Tiêu đề */}
           <div className="px-8 pt-8 pb-4">
             <h1 className="text-3xl font-bold text-gray-800 text-center">Xác Minh Email Của Bạn</h1>

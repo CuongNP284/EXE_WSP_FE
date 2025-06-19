@@ -31,7 +31,6 @@ const Checkout = () => {
     }
 
     const bookingData = {
-      userId: localStorage.getItem('userId'),
       workshopId: workshop.workshopId,
       quantity: quantity
     };
@@ -65,7 +64,6 @@ const Checkout = () => {
           },
           signature: generateSignature(total, 'cc7aebbc-f982-4914-bde3-bb73cdf86cca', 'YOUR_SECRET_KEY')
         };
-
 
         const paymentResponse = await ApiService.createPayment(paymentData);
         if (paymentResponse.status === 200 && typeof paymentResponse.data === 'string') {

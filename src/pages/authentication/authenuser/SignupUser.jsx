@@ -43,7 +43,14 @@ const SignupUser = () => {
       const response = await ApiService.registerUser(registrationData);
       if (response.status === 200) {
         Swal.fire('Success', 'User Successfully Registered, Now Please Sign In', 'success');
-        navigate('/questions');
+        // Check the role based on isOrganizer (2 = ORGANIZER, 3 = USER)
+        if (!formData.isOrganizer) {
+          // USER role, redirect to questions
+          navigate('/questions');
+        } else {
+          // ORGANIZER role, redirect to login
+          navigate('/loginuser');
+        }
       } else {
         Swal.fire('Error', response.message, 'error');
       }

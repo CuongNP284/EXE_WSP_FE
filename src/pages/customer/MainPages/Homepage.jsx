@@ -231,15 +231,7 @@ const Homepage = () => {
                       <div className="flex items-center text-sm text-gray-600">
                         <Calendar size={16} className="mr-2 text-gray-400" />
                         <span>{new Date(workshop.createdAt).toLocaleDateString('vi-VN')}</span>
-                      </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Clock size={16} className="mr-2 text-gray-400" />
-                        <span>{workshop.durationMinutes} phút</span>
-                      </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <MapPin size={16} className="mr-2 text-gray-400" />
-                        <span className="line-clamp-1">{workshop.location}</span>
-                      </div>
+                      </div>                    
                     </div>
                     <div className="mb-4">
                       <span className="text-lg font-bold text-[#091238]">{workshop.price.toLocaleString('vi-VN')} VNĐ</span>

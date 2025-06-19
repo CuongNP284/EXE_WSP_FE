@@ -1528,13 +1528,13 @@ export default class ApiService {
 
     /**
      * Create a booking for a workshop
-     * @param {Object} bookingData - The booking data containing userId, workshopId, and quantity
+     * @param {Object} bookingData - The booking data containing workshopId and quantity
      * @returns {Promise<Object>} Response object with status and data/message
      */
     static async createBooking(bookingData) {
         try {
-            if (!bookingData.userId || !bookingData.workshopId || !bookingData.quantity) {
-                throw new Error("User ID, Workshop ID, and quantity are required");
+            if (!bookingData.workshopId || !bookingData.quantity) {
+                throw new Error("Workshop ID and quantity are required");
             }
 
             console.log("Creating new booking with data:", bookingData);

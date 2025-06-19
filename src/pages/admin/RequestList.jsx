@@ -53,7 +53,7 @@ const RequestList = () => {
                         id: workshop.workshopId,
                         name: workshop.title,
                         description: workshop.description,
-                        image: workshop.image || "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                        image: workshop.image || "https://images.stockcake.com/public/5/4/1/5417e74f-10cd-4be6-b128-85492eb59acc_large/creative-team-meeting-stockcake.jpg",
                         submittedDate: workshop.createdAt,
                         reviewDate: workshop.updatedAt || "",
                         date: workshop.startDate || new Date(workshop.createdAt).toISOString(),

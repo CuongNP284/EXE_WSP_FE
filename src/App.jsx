@@ -112,7 +112,7 @@ const App = () => {
         <Route path='/organizerprofile' element={<ProtectedRoute element={<OrganizerProfile />} allowedRoles={['ORGANIZER']} />} />
         <Route path='/createworkshop' element={<ProtectedRoute element={<CreateWorkshop />} allowedRoles={['ORGANIZER']} />} />
         <Route path='/editworkshop/:id' element={<ProtectedRoute element={<EditWorkshop />} allowedRoles={['ORGANIZER']} />} />
-        <Route path='/workshopdetail/:id' element={<ProtectedRoute element={<ViewWsDetail />} allowedRoles={['ORGANIZER']} />} />
+        <Route path='/viewwsdetail/:workshopId' element={<ProtectedRoute element={<ViewWsDetail />} allowedRoles={['ORGANIZER']} />} />
 
         {/* Admin Routes - Admin role only */}
         <Route path='/userlist' element={<ProtectedRoute element={<UserList />} allowedRoles={['ADMIN']} />} />

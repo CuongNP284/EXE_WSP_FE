@@ -35,7 +35,7 @@ const RequestDetail = () => {
                     location: workshop.location,
                     participants: workshop.maxParticipants ? `${workshop.currentParticipants || 0}/${workshop.maxParticipants} người tham gia` : 'N/A',
                     price: `${workshop.price.toLocaleString('vi-VN')} VND`,
-                    image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+                    image: "https://images.stockcake.com/public/5/4/1/5417e74f-10cd-4be6-b128-85492eb59acc_large/creative-team-meeting-stockcake.jpg",
                     eventDate: new Date(workshop.createdAt).toLocaleDateString('vi-VN'),
                     startTimeDetail: workshop.startTime ? new Date(workshop.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
                     endTimeDetail: workshop.endTime ? new Date(workshop.endTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
@@ -114,6 +114,8 @@ const RequestDetail = () => {
                         icon: 'success',
                         title: 'Thành công',
                         text: 'Workshop đã được duyệt thành công!',
+                    }).then(() => {
+                        navigate('/requestlist');
                     });
                     setWorkshopData(prev => ({
                         ...prev,

@@ -24,13 +24,11 @@ const EditWorkshop = ({ workshopId }) => {
 
     useEffect(() => {
         const fetchData = async () => {
-            // Fetch categories
             const categoriesResponse = await ApiService.getAllCategories();
             if (categoriesResponse.status === 200) {
                 setCategories(categoriesResponse.data.data || []);
             }
 
-            // Fetch workshop data
             const workshopResponse = await ApiService.getWorkshopById(workshopId);
             if (workshopResponse.status === 200) {
                 const workshop = workshopResponse.data.data;
@@ -44,7 +42,7 @@ const EditWorkshop = ({ workshopId }) => {
                     price: workshop.price || ''
                 });
             } else {
-                message.error('Failed to fetch workshop data');
+                message.error('Không thể tải dữ liệu workshop');
             }
         };
         fetchData();
@@ -55,8 +53,8 @@ const EditWorkshop = ({ workshopId }) => {
     };
 
     const steps = [
-        { id: 1, title: 'Workshop Information', completed: false },
-        { id: 2, title: 'Details & Media', completed: false }
+        { id: 1, title: 'Thông tin Workshop', completed: false },
+        { id: 2, title: 'Chi tiết & Hình ảnh', completed: false }
     ];
 
     const handleInputChange = (e) => {
@@ -76,15 +74,15 @@ const EditWorkshop = ({ workshopId }) => {
     const validateStep = () => {
         const newErrors = {};
         if (currentStep === 1) {
-            if (!formData.title.trim()) newErrors.title = 'Workshop title is required';
-            if (!formData.description.trim()) newErrors.description = 'Description is required';
-            if (!formData.categoryId) newErrors.categoryId = 'Category is required';
-            if (!formData.location.trim()) newErrors.location = 'Location is required';
+            if (!formData.title.trim()) newErrors.title = 'Tên workshop là bắt buộc';
+            if (!formData.description.trim()) newErrors.description = 'Mô tả là bắt buộc';
+            if (!formData.categoryId) newErrors.categoryId = 'Danh mục là bắt buộc';
+            if (!formData.location.trim()) newErrors.location = 'Địa điểm là bắt buộc';
         } else if (currentStep === 2) {
             if (!formData.durationMinutes || formData.durationMinutes <= 0) 
-                newErrors.durationMinutes = 'Duration must be greater than 0';
+                newErrors.durationMinutes = 'Thời lượng phải lớn hơn 0';
             if (formData.price === '' || formData.price < 0) 
-                newErrors.price = 'Price must be non-negative';
+                newErrors.price = 'Giá phải là số không âm';
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -101,9 +99,9 @@ const EditWorkshop = ({ workshopId }) => {
                 };
                 const response = await ApiService.updateWorkshop(workshopId, workshopData);
                 if (response.status === 200) {
-                    message.success('Workshop updated successfully');
+                    message.success('Workshop đã được cập nhật thành công');
                 } else {
-                    message.error(response.message);
+                    message.error(response.message || 'Không thể cập nhật workshop');
                 }
             } else {
                 setCurrentStep(currentStep + 1);
@@ -124,25 +122,25 @@ const EditWorkshop = ({ workshopId }) => {
                 return (
                     <div className="space-y-6">
                         <div>
-                            <label className="block text-white text-sm font-medium mb-2">Workshop Title</label>
+                            <label className="block text-white text-sm font-medium mb-2">Tên Workshop</label>
                             <input
                                 type="text"
                                 name="title"
                                 value={formData.title}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 bg-gray-200 rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter workshop title"
+                                placeholder="Nhập tên workshop"
                             />
                             {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
                         </div>
 
                         <div>
-                            <label className="block text-white text-sm font-medium mb-2">Category</label>
+                            <label className="block text-white text-sm font-medium mb-2">Danh mục</label>
                             <Select
                                 value={formData.categoryId}
                                 onChange={handleCategoryChange}
                                 className="w-full"
-                                placeholder="Select category"
+                                placeholder="Chọn danh mục"
                             >
                                 {categories.map(category => (
                                     <Option key={category.id} value={category.id}>{category.name}</Option>
@@ -152,26 +150,26 @@ const EditWorkshop = ({ workshopId }) => {
                         </div>
 
                         <div>
-                            <label className="block text-white text-sm font-medium mb-2">Location</label>
+                            <label className="block text-white text-sm font-medium mb-2">Địa điểm</label>
                             <input
                                 type="text"
                                 name="location"
                                 value={formData.location}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 bg-gray-200 rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter location"
+                                placeholder="Nhập địa điểm"
                             />
                             {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
                         </div>
 
                         <div>
-                            <label className="block text-white text-sm font-medium mb-2">Description</label>
+                            <label className="block text-white text-sm font-medium mb-2">Mô tả</label>
                             <textarea
                                 name="description"
                                 value={formData.description}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 bg-gray-200 rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter description"
+                                placeholder="Nhập mô tả"
                                 rows="4"
                             />
                             {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
@@ -182,59 +180,43 @@ const EditWorkshop = ({ workshopId }) => {
                 return (
                     <div className="space-y-6">
                         <div>
-                            <label className="block text-white text-sm font-medium mb-2">Duration (minutes)</label>
+                            <label className="block text-white text-sm font-medium mb-2">Thời lượng (phút)</label>
                             <input
                                 type="number"
                                 name="durationMinutes"
                                 value={formData.durationMinutes}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 bg-gray-200 rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter duration"
+                                placeholder="Nhập thời lượng"
                                 min="1"
                             />
                             {errors.durationMinutes && <p className="text-red-500 text-sm mt-1">{errors.durationMinutes}</p>}
                         </div>
 
                         <div>
-                            <label className="block text-white text-sm font-medium mb-2">Price (VND)</label>
+                            <label className="block text-white text-sm font-medium mb-2">Giá (VND)</label>
                             <input
                                 type="number"
                                 name="price"
                                 value={formData.price}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 bg-gray-200 rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter price"
+                                placeholder="Nhập giá"
                                 min="0"
                             />
                             {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
                         </div>
 
                         <div>
-                            <label className="block text-white text-sm font-medium mb-2">Intro Video URL</label>
+                            <label className="block text-white text-sm font-medium mb-2">URL Video Giới thiệu</label>
                             <input
                                 type="text"
                                 name="introVideoUrl"
                                 value={formData.introVideoUrl}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 bg-gray-200 rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter video URL"
+                                placeholder="Nhập URL video"
                             />
-                        </div>
-
-                        <div>
-                            <label className="block text-white text-sm font-medium mb-3">Upload Workshop Media</label>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-gray-200 rounded-lg h-40 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors">
-                                    <Plus className="w-8 h-8 text-gray-600 mb-2" />
-                                    <span className="text-gray-600 text-sm text-center">Update workshop logo</span>
-                                </div>
-                                <div className="bg-gray-200 rounded-lg h-40 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors">
-                                    <div className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center mb-2">
-                                        <Plus className="w-5 h-5 text-white" />
-                                    </div>
-                                    <span className="text-gray-600 text-sm text-center">Update workshop image</span>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 );
@@ -250,8 +232,8 @@ const EditWorkshop = ({ workshopId }) => {
                 <OrganizerHeader />
                 <main className="flex-1 overflow-y-auto p-6">
                     <div className="mb-6">
-                        <h2 className="text-3xl font-bold text-gray-900">Edit Workshop</h2>
-                        <p className="text-gray-600 mt-1">Update workshop details</p>
+                        <h2 className="text-3xl font-bold text-gray-900">Chỉnh sửa Workshop</h2>
+                        <p className="text-gray-600 mt-1">Cập nhật chi tiết workshop</p>
                     </div>
 
                     <div className="bg-slate-800 rounded-xl p-6 mb-8">
@@ -289,14 +271,14 @@ const EditWorkshop = ({ workshopId }) => {
                                     : 'bg-gray-700 text-white hover:bg-gray-600'
                                     }`}
                             >
-                                Previous
+                                Quay lại
                             </button>
 
                             <button
                                 onClick={handleNext}
                                 className="px-6 py-2 rounded-lg font-medium bg-blue-600 text-white hover:bg-blue-700"
                             >
-                                {currentStep === 2 ? 'Save Changes' : 'Next'}
+                                {currentStep === 2 ? 'Lưu thay đổi' : 'Tiếp theo'}
                             </button>
                         </div>
                     </div>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import CustomerHeader from '../../../components/customer/CustomerHeader';
 import CustomeFooter from '../../../components/customer/CustomeFooter';
 import ApiService from '../../../service/ApiService';
+import { Calendar, Eye } from 'lucide-react';
 
 const BlogUser = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -23,14 +24,12 @@ const BlogUser = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       const response = await ApiService.getAllBlogPosts({ pageSize: 15, page: 1 });
-
       const items = response?.data?.data?.items;
       if (response.status === 200 && items) {
         const mappedBlogs = items.map(blog => ({
           ...blog,
-          readTime: `${Math.floor(Math.random() * 12) + 4} PHÚT ĐỌC`,
           date: new Date(blog.createdAt).toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', year: 'numeric' }),
-          image: "https://vioagency.vn/wp-content/uploads/2022/05/digital-marketing-la-gi-5.jpg",
+          image: blog.image || "https://images.stockcake.com/public/5/4/1/5417e74f-10cd-4be6-b128-85492eb59acc_large/creative-team-meeting-stockcake.jpg"
         }));
         setBlogs(mappedBlogs);
       } else {
@@ -45,7 +44,6 @@ const BlogUser = () => {
       return blog.title.toLowerCase().includes(searchTerm.toLowerCase());
     });
   }, [searchTerm, blogs]);
-
 
   const totalBlogs = filteredBlogs.length;
   const totalPages = Math.ceil(totalBlogs / blogsPerPage);
@@ -125,29 +123,36 @@ const BlogUser = () => {
             </div>
 
             {currentBlogs.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {currentBlogs.map((blog) => (
-                  <div key={blog.blogPostId} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
-                    <Link to={`/blog/${blog.blogPostId}`}>
+                  <div key={blog.blogPostId} className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
+                    <div className="relative">
                       <img
                         src={blog.image}
                         alt={blog.title}
-                        className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
+                        className="w-full h-48 object-cover"
                       />
-                    </Link>
-                    <div className="p-4">
-
-                      <Link to={`/blog/${blog.blogPostId}`}>
-                        <h2
-                          className="text-xl font-semibold mt-2 hover:text-blue-600 transition-colors duration-300"
-                        >
-                          {blog.title}
-                        </h2>
-                      </Link>
-                      <div className="flex justify-between items-center mt-3">
-                        <p className="text-sm text-gray-500">{blog.date}</p>
-                        <p className="text-sm text-gray-500">{blog.date}</p>
+                    </div>
+                    <div className="p-6">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
+                        {blog.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                        {blog.content || "Khám phá những thông tin hữu ích và cập nhật mới nhất về các sự kiện và workshop."}
+                      </p>
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Calendar size={16} className="mr-2 text-gray-400" />
+                          <span>{blog.date}</span>
+                        </div>
                       </div>
+                      <Link
+                        to={`/blog/${blog.blogPostId}`}
+                        className="w-full bg-[#091238] hover:bg-opacity-90 text-white py-3 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 no-underline"
+                      >
+                        <Eye size={16} />
+                        Xem chi tiết
+                      </Link>
                     </div>
                   </div>
                 ))}

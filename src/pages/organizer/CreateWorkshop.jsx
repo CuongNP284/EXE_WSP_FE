@@ -4,6 +4,7 @@ import OrganizerSidebar from '../../components/organizer/OrganizerSidebar';
 import OrganizerHeader from '../../components/organizer/OrganizerHeader';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import ApiService from '../../service/ApiService';
 
 const { Option } = Select;
@@ -34,7 +35,7 @@ const CreateWorkshop = () => {
                 }));
                 setCategories(mappedCategories);
             } else {
-                message.error('Failed to fetch categories');
+                message.error('Không thể tải danh sách danh mục');
             }
         };
         fetchCategories();
@@ -45,8 +46,8 @@ const CreateWorkshop = () => {
     };
 
     const steps = [
-        { id: 1, title: 'Workshop Information', completed: false },
-        { id: 2, title: 'Details & Media', completed: false }
+        { id: 1, title: 'Thông tin Workshop', completed: false },
+        { id: 2, title: 'Chi tiết & Hình ảnh', completed: false }
     ];
 
     const handleInputChange = (e) => {
@@ -64,21 +65,21 @@ const CreateWorkshop = () => {
             ...prev,
             categoryId: value ? String(value) : ''
         }));
-        setErrors(prev => ({ ...prev, categoryId: value ? '' : 'Category is required' }));
+        setErrors(prev => ({ ...prev, categoryId: value ? '' : 'Danh mục là bắt buộc' }));
     };
 
     const validateStep = () => {
         const newErrors = {};
         if (currentStep === 1) {
-            if (!formData.title.trim()) newErrors.title = 'Workshop title is required';
-            if (!formData.description.trim()) newErrors.description = 'Description is required';
-            if (!formData.categoryId) newErrors.categoryId = 'Category is required';
-            if (!formData.location.trim()) newErrors.location = 'Location is required';
+            if (!formData.title.trim()) newErrors.title = 'Tên workshop là bắt buộc';
+            if (!formData.description.trim()) newErrors.description = 'Mô tả là bắt buộc';
+            if (!formData.categoryId) newErrors.categoryId = 'Danh mục là bắt buộc';
+            if (!formData.location.trim()) newErrors.location = 'Địa điểm là bắt buộc';
         } else if (currentStep === 2) {
             if (!formData.durationMinutes || formData.durationMinutes <= 0)
-                newErrors.durationMinutes = 'Duration must be greater than 0';
+                newErrors.durationMinutes = 'Thời lượng phải lớn hơn 0';
             if (formData.price === '' || formData.price < 0)
-                newErrors.price = 'Price must be non-negative';
+                newErrors.price = 'Giá phải là số không âm';
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -98,7 +99,6 @@ const CreateWorkshop = () => {
                     return;
                 }
 
-                // Validate organizerId format (UUID)
                 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
                 if (!uuidRegex.test(organizerId)) {
                     Swal.fire({
@@ -112,7 +112,7 @@ const CreateWorkshop = () => {
 
                 const workshopData = {
                     ...formData,
-                    organizerId: organizerId,
+                    organizerId,
                     durationMinutes: parseInt(formData.durationMinutes),
                     price: parseFloat(formData.price)
                 };
@@ -120,14 +120,12 @@ const CreateWorkshop = () => {
                 try {
                     const response = await ApiService.createWorkshop(workshopData);
                     if (response.status === 200) {
-                        // Show SweetAlert2 success message
                         Swal.fire({
                             icon: 'success',
                             title: 'Thành công!',
-                            text: 'Workshop đã được tạo thành công. Vui lòng chờ bộ phận kiểm duyệt workshop duyệt workshop của bạn.',
+                            text: 'Workshop đã được tạo thành công. Vui lòng chờ bộ phận kiểm duyệt duyệt workshop của bạn.',
                             confirmButtonText: 'OK'
                         }).then(() => {
-                            // Reset form and navigate back to step 1
                             setFormData({
                                 title: '',
                                 description: '',
@@ -292,17 +290,14 @@ const CreateWorkshop = () => {
                         <div className="flex items-center justify-between mb-8">
                             {steps.map((step, index) => (
                                 <div key={step.id} className="flex items-center">
-                                    <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${currentStep >= step.id ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-300'
-                                        }`}>
+                                    <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${currentStep >= step.id ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-300'}`}>
                                         {step.id}
                                     </div>
-                                    <span className={`ml-3 text-sm font-medium ${currentStep >= step.id ? 'text-white' : 'text-gray-400'
-                                        }`}>
+                                    <span className={`ml-3 text-sm font-medium ${currentStep >= step.id ? 'text-white' : 'text-gray-400'}`}>
                                         {step.title}
                                     </span>
                                     {index < steps.length - 1 && (
-                                        <div className={`mx-4 h-0.5 w-16 ${currentStep > step.id ? 'bg-blue-600' : 'bg-gray-600'
-                                            }`} />
+                                        <div className={`mx-4 h-0.5 w-16 ${currentStep > step.id ? 'bg-blue-600' : 'bg-gray-600'}`} />
                                     )}
                                 </div>
                             ))}
@@ -316,8 +311,7 @@ const CreateWorkshop = () => {
                             <button
                                 onClick={handlePrevious}
                                 disabled={currentStep === 1}
-                                className={`px-6 py-2 rounded-lg font-medium ${currentStep === 1 ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-gray-700 text-white hover:bg-gray-600'
-                                    }`}
+                                className={`px-6 py-2 rounded-lg font-medium ${currentStep === 1 ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-gray-700 text-white hover:bg-gray-600'}`}
                             >
                                 Quay lại
                             </button>

@@ -22,7 +22,7 @@ const MyWorkshop = () => {
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi',
-                    text: 'Failed to fetch workshops',
+                    text: 'Không thể tải danh sách workshop',
                 });
             }
         };
@@ -47,18 +47,19 @@ const MyWorkshop = () => {
                 Swal.fire({
                     icon: 'success',
                     title: 'Thành công',
-                    text: 'Workshop deleted successfully',
+                    text: 'Workshop đã được xóa thành công',
                 });
                 setWorkshops(workshops.filter(w => w.id !== workshopId));
             } else {
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi',
-                    text: response.message || 'Failed to delete workshop',
+                    text: response.message || 'Không thể xóa workshop',
                 });
             }
         }
     };
+
     const getStatusColor = (status) => {
         switch (status) {
             case 'active':
@@ -75,13 +76,13 @@ const MyWorkshop = () => {
     const getStatusText = (status) => {
         switch (status) {
             case 'active':
-                return 'Active';
+                return 'Đang diễn ra';
             case 'upcoming':
-                return 'Upcoming';
+                return 'Sắp diễn ra';
             case 'completed':
-                return 'Completed';
+                return 'Đã hoàn thành';
             default:
-                return 'Unknown';
+                return 'Không xác định';
         }
     };
 
@@ -105,12 +106,12 @@ const MyWorkshop = () => {
                 <main className="flex-1 overflow-y-auto p-6">
                     <div className="flex justify-between items-center mb-6">
                         <div>
-                            <h2 className="text-3xl font-bold text-gray-900">My Workshops</h2>
-                            <p className="text-gray-600 mt-1">Manage and track your workshops</p>
+                            <h2 className="text-3xl font-bold text-gray-900">Workshop của tôi</h2>
+                            <p className="text-gray-600 mt-1">Quản lý và theo dõi workshop của bạn</p>
                         </div>
                         <Link to="/createworkshop" className="bg-[#091238] hover:bg-gray-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors no-underline">
                             <Plus size={20} />
-                            Create New Workshop
+                            Tạo Workshop Mới
                         </Link>
                     </div>
 
@@ -119,9 +120,9 @@ const MyWorkshop = () => {
                             image={Empty.PRESENTED_IMAGE_SIMPLE}
                             description={
                                 <span>
-                                    No workshops found.{' '}
+                                    Không tìm thấy workshop.{' '}
                                     <Link to="/createworkshop" className="text-[#091238] hover:underline">
-                                        Create your first workshop
+                                        Tạo workshop đầu tiên của bạn
                                     </Link>
                                 </span>
                             }
@@ -134,7 +135,7 @@ const MyWorkshop = () => {
                                     <div key={workshop.workshopId} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
                                         <div className="relative">
                                             <img
-                                                src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                                src="https://images.stockcake.com/public/5/4/1/5417e74f-10cd-4be6-b128-85492eb59acc_large/creative-team-meeting-stockcake.jpg"
                                                 alt={workshop.title}
                                                 className="w-full h-48 object-cover rounded-t-lg"
                                             />
@@ -160,10 +161,10 @@ const MyWorkshop = () => {
                                                 </div>
                                                 <div className="flex items-center text-sm text-gray-600">
                                                     <Users size={16} className="mr-2 text-gray-400" />
-                                                    <span>{workshop.capacity || 'N/A'} participants</span>
+                                                    <span>{workshop.capacity || 'N/A'} người tham gia</span>
                                                 </div>
                                                 <div className="flex items-center text-sm text-gray-600">
-                                                    <span>Duration: {workshop.durationMinutes} minutes</span>
+                                                    <span>Thời lượng: {workshop.durationMinutes} phút</span>
                                                 </div>
                                             </div>
 
@@ -172,9 +173,9 @@ const MyWorkshop = () => {
                                             </div>
 
                                             <div className="flex space-x-2">
-                                                <Link to={`/workshopdetail/${workshop.workshopId}`} className="flex-1 bg-[#091238] hover:bg-gray-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 no-underline">
+                                                <Link to={`/viewwsdetail/${workshop.workshopId}`} className="flex-1 bg-[#091238] hover:bg-gray-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 no-underline">
                                                     <Eye size={16} />
-                                                    View Details
+                                                    Xem Chi Tiết
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDelete(workshop.workshopId)}

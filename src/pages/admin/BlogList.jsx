@@ -157,7 +157,7 @@ const BlogList = () => {
                             description={
                                 <span>
                                     Chưa có bài viết nào.{' '}
-                                    <Link to="/admin/blog/create" className="text-[#091238] hover:underline">
+                                    <Link to="/blogcreate" className="text-[#091238] hover:underline">
                                         Tạo bài viết đầu tiên của bạn
                                     </Link>
                                 </span>

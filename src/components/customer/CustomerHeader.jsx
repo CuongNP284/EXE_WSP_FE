@@ -27,7 +27,7 @@ const CustomerHeader = () => {
         {
             key: 'profile',
             label: (
-                <Link to="/profile" className="flex items-center space-x-2 px-2 py-1">
+                <Link to="/userprofile" className="flex items-center space-x-2 px-2 py-1">
                     <User size={16} />
                     <span>Hồ sơ cá nhân</span>
                 </Link>

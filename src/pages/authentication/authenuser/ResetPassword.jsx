@@ -41,7 +41,7 @@ const ResetPasswordPage = () => {
   const handleSubmitEmail = async (e) => {
     e.preventDefault();
     if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      Swal.fire('Error', 'Please enter a valid email address', 'error');
+      Swal.fire('Error', 'Xin hãy nhập đúng email của bạn', 'error');
       return;
     }
     console.log('Email being sent:', formData.email); // Debug log
@@ -52,19 +52,19 @@ const ResetPasswordPage = () => {
         if (otpResponse.status === 200) {
           await Swal.fire({
             title: 'Success',
-            text: 'OTP has been sent to your email.',
+            text: 'Mã OTP đã được gửi đến email của bạn',
             icon: 'success'
           });
           setStep(2);
         } else {
-          Swal.fire('Error', otpResponse.message || 'Failed to send OTP email', 'error');
+          Swal.fire('Error', otpResponse.message || 'Không thể gửi OPT qua bạn được', 'error');
         }
       } else {
-        Swal.fire('Error', response.message || 'Failed to initiate password reset', 'error');
+        Swal.fire('Error', response.message || 'Lỗi đổi mật khẩu, xin vui lòng thử lại', 'error');
       }
     } catch (error) {
       console.error('Error during forget password:', error.response?.data || error.message);
-      Swal.fire('Error', error.response?.data?.message || 'Unable to send OTP', 'error');
+      Swal.fire('Error', error.response?.data?.message || 'Không thể gửi OPT qua bạn được', 'error');
     }
   };
 
@@ -75,15 +75,15 @@ const ResetPasswordPage = () => {
       if (otpResponse.status === 200) {
         await Swal.fire({
           title: 'Success',
-          text: 'A new OTP has been sent to your email.',
+          text: 'Mã OTP đã được gửi lại đến email của bạn',
           icon: 'success'
         });
       } else {
-        Swal.fire('Error', otpResponse.message || 'Failed to resend OTP', 'error');
+        Swal.fire('Error', otpResponse.message || 'Không thể gửi OPT qua bạn được', 'error');
       }
     } catch (error) {
-      console.error('Error resending OTP:', error);
-      Swal.fire('Error', error.message || 'Unable to resend OTP', 'error');
+      console.error('Lỗi gửi lại mã OPT:', error);
+      Swal.fire('Error', error.message || 'Không thể gửi OPT qua bạn được', 'error');
     }
   };
 
@@ -93,18 +93,18 @@ const ResetPasswordPage = () => {
     if (otp.length === 6 && /^[0-9]{6}$/.test(otp)) {
       setStep(3); // Move to password reset step
     } else {
-      Swal.fire('Error', 'Please enter a valid 6-digit OTP', 'error');
+      Swal.fire('Error', 'Xin hãy nhập đúng 6 số của mã OPT', 'error');
     }
   };
 
   const handleSubmitNewPassword = async (e) => {
     e.preventDefault();
     if (formData.newPassword !== formData.confirmPassword) {
-      Swal.fire('Error', 'Passwords do not match', 'error');
+      Swal.fire('Error', 'Mật khẩu không trùng khớp', 'error');
       return;
     }
     if (formData.newPassword.length < 8) {
-      Swal.fire('Error', 'Password must be at least 8 characters long', 'error');
+      Swal.fire('Error', 'Mật khẩu phải dài ít nhất 8 kí tự', 'error');
       return;
     }
     try {

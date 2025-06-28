@@ -56,12 +56,17 @@ const Questions = () => {
             setCurrentStep((prev) => prev + 1);
         } else {
             setDirection('forward');
-            const categoryIds = categories
+            const selectedIds = categories
                 .filter(cat => answers.hobbyTypes.includes(cat.name))
-                .map(cat => ({ categoryId: cat.id }));
-            if (categoryIds.length > 0) {
-                await Promise.all(categoryIds.map(data => ApiService.handleFavouriteCategory(data)));
+                .map(cat => cat.id); // array of strings
+
+            if (selectedIds.length > 0) {
+                const result = await ApiService.handleFavouriteCategory({ categoryIds: selectedIds });
+                if (result.status !== 200) {
+                    console.error("Lưu category yêu thích thất bại:", result.message);
+                }
             }
+
             setCompleted(true);
             navigate('/');
         }
@@ -164,6 +169,14 @@ const Questions = () => {
                                         >
                                             {questions[currentStep].question}
                                         </motion.h2>
+                                        <motion.p
+                                            className="text-gray-600 mb-4"
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.3, duration: 0.3 }}
+                                        >
+                                            Hãy chọn ít nhất 2 sở thích để chúng tôi gợi ý những workshop phù hợp nhất với bạn!
+                                        </motion.p>
 
                                         <div className="space-y-4 mb-8">
                                             {questions[currentStep].type === 'checkbox' && (
@@ -233,7 +246,7 @@ const Questions = () => {
                                         <motion.div
                                             className="flex justify-between"
                                             initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1}}
+                                            animate={{ opacity: 1 }}
                                             transition={{ delay: 0.4, duration: 0.3 }}
                                         >
                                             <motion.button

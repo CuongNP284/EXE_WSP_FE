@@ -21,7 +21,7 @@ const ViewWsDetail = () => {
                         workshopId: workshop.workshopId,
                         title: workshop.title,
                         description: workshop.description,
-                        eventDate: workshop.startDate ? new Date(workshop.startDate).toLocaleDateString('vi-VN') : 'N/A',
+                        eventDate: workshop.startTime ? new Date(workshop.startTime).toLocaleDateString('vi-VN') : 'N/A',
                         startTimeDetail: workshop.startTime ? new Date(workshop.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
                         endTimeDetail: workshop.endTime ? new Date(workshop.endTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
                         location: workshop.location,

@@ -34,7 +34,6 @@ import OrganizerDashboard from './pages/organizer/OrganizerDashboard';
 import MyWorkshop from './pages/organizer/MyWorkshop';
 import OrganizerProfile from './pages/organizer/OrganizerProfile';
 import CreateWorkshop from './pages/organizer/CreateWorkshop';
-import EditWorkshop from './pages/organizer/EditWorkshop';
 import ViewWsDetail from './pages/organizer/ViewWsDetail';
 
 // Admin Import
@@ -86,7 +85,7 @@ const App = () => {
         <Route path='/signupuser' element={<SignupUser />} />
         <Route path='/resetpassword' element={<ResetPasswordPage />} />
         <Route path='/emailverify' element={<EmailVerificationPage />} />
-        <Route path='/questions' element={<Questions />} />
+        <Route path='/questions' element={<ProtectedRoute element={<Questions />} allowedRoles={['USER']} />} />
         <Route path='/login' element={<GoogleCallback />} />
 
         {/* Customer Routes - Accessible to guests and authenticated users */}
@@ -111,7 +110,6 @@ const App = () => {
         <Route path='/myworkshop' element={<ProtectedRoute element={<MyWorkshop />} allowedRoles={['ORGANIZER']} />} />
         <Route path='/organizerprofile' element={<ProtectedRoute element={<OrganizerProfile />} allowedRoles={['ORGANIZER']} />} />
         <Route path='/createworkshop' element={<ProtectedRoute element={<CreateWorkshop />} allowedRoles={['ORGANIZER']} />} />
-        <Route path='/editworkshop/:id' element={<ProtectedRoute element={<EditWorkshop />} allowedRoles={['ORGANIZER']} />} />
         <Route path='/viewwsdetail/:workshopId' element={<ProtectedRoute element={<ViewWsDetail />} allowedRoles={['ORGANIZER']} />} />
 
         {/* Admin Routes - Admin role only */}

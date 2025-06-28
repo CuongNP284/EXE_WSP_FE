@@ -12,9 +12,6 @@ const RequestDetail = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [isApproving, setIsApproving] = useState(false);
     const [workshopData, setWorkshopData] = useState(null);
-    const [categoryName, setCategoryName] = useState('Uncategorized');
-    const [organizerName, setOrganizerName] = useState('Unknown Organizer');
-    const [organizerEmail, setOrganizerEmail] = useState('N/A');
 
     useEffect(() => {
         fetchWorkshopDetails();
@@ -25,8 +22,23 @@ const RequestDetail = () => {
             const response = await ApiService.getWorkshopById(workshopId);
             if (response.status === 200 && response.data?.data) {
                 const workshop = response.data.data;
+
+                // Gọi thêm API để lấy tên danh mục từ categoryId
+                let categoryName = 'Uncategorized';
+                if (workshop.categoryId) {
+                    try {
+                        const categoryRes = await ApiService.getCategoryById(workshop.categoryId);
+                        if (categoryRes.status === 200 && categoryRes.data?.data?.name) {
+                            categoryName = categoryRes.data.data.name;
+                        }
+                    } catch (err) {
+                        console.warn("Không thể lấy tên danh mục:", err);
+                    }
+                }
+
                 setWorkshopData({
                     workshopId: workshop.workshopId,
+                    organizerId: workshop.organizerId,
                     title: workshop.title,
                     description: workshop.description,
                     date: new Date(workshop.createdAt).toLocaleDateString('vi-VN'),
@@ -44,34 +56,14 @@ const RequestDetail = () => {
                         { name: "Standard Ticket", price: workshop.price.toString() }
                     ],
                     status: workshop.status === 0 ? 'Đang chờ duyệt' : workshop.status === 1 ? 'Đã phê duyệt' : 'Bị từ chối',
-                    organizerId: workshop.organizerId,
                     categoryId: workshop.categoryId,
                     introVideoUrl: workshop.introVideoUrl,
                     submittedDate: new Date(workshop.createdAt).toLocaleDateString('vi-VN'),
-                    durationMinutes: workshop.durationMinutes
+                    durationMinutes: workshop.durationMinutes,
+                    categoryName: categoryName,
+                    organizerName: `${workshop.userInfo?.firstName || ''} ${workshop.userInfo?.lastName || ''}` || 'Unknown Organizer',
+                    organizerEmail: workshop.userInfo?.email || 'N/A'
                 });
-
-                // Fetch category name
-                if (workshop.categoryId) {
-                    const categoryResponse = await ApiService.getCategoryById(workshop.categoryId);
-                    if (categoryResponse.status === 200 && categoryResponse.data?.data?.name) {
-                        setCategoryName(categoryResponse.data.data.name);
-                    }
-                }
-
-                // Fetch organizer details
-                if (workshop.organizerId) {
-                    try {
-                        const organizerResponse = await ApiService.getUserById(workshop.organizerId);
-                        if (organizerResponse.status === 200 && organizerResponse.data?.data) {
-                            const user = organizerResponse.data.data;
-                            setOrganizerName(`${user.firstName} ${user.lastName}` || 'Unknown Organizer');
-                            setOrganizerEmail(user.email || 'N/A');
-                        }
-                    } catch (err) {
-                        console.error('Lỗi khi fetch organizer info:', err);
-                    }
-                }
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -176,7 +168,7 @@ const RequestDetail = () => {
                                     {workshopData.description}
                                 </p>
                                 <div className="mt-4 flex items-center space-x-4 text-sm text-gray-500">
-                                    <span>Người tổ chức: <strong>{organizerName}</strong></span>
+                                    <span>Người tổ chức: <strong>{workshopData.organizerName}</strong></span>
                                     <span>Ngày gửi: <strong>{workshopData.submittedDate}</strong></span>
                                 </div>
                             </div>
@@ -233,7 +225,7 @@ const RequestDetail = () => {
                                         <Users className="w-5 h-5 text-purple-500" />
                                         <div>
                                             <span className="text-sm text-gray-500">Danh mục</span>
-                                            <p className="font-medium">{categoryName}</p>
+                                            <p className="font-medium">{workshopData.categoryName}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -279,8 +271,23 @@ const RequestDetail = () => {
                             </div>
                         )}
 
-                        {/* Status and Actions */}
+                        {/* Organizer Information */}
                         <div className="bg-white rounded-lg shadow-sm p-6">
+                            <h2 className="text-xl font-semibold text-gray-900 mb-4">Thông tin người tổ chức</h2>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <span className="text-sm text-gray-500">Tên tổ chức</span>
+                                    <p className="font-medium">{workshopData.organizerName}</p>
+                                </div>
+                                <div>
+                                    <span className="text-sm text-gray-500">Email liên hệ</span>
+                                    <p className="font-medium">{workshopData.organizerEmail}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Status and Actions */}
+                        <div className="bg-white rounded-lg shadow-sm p-6  mt-6">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <h2 className="text-xl font-semibold text-gray-900 mb-2">Trạng thái Workshop</h2>
@@ -301,31 +308,6 @@ const RequestDetail = () => {
                                         <CheckCircle className="w-4 h-4" />
                                         <span>Duyệt</span>
                                     </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Additional Info */}
-                        <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
-                            <h2 className="text-xl font-semibold text-gray-900 mb-4">Mô tả chi tiết</h2>
-                            <div className="prose max-w-none">
-                                <p className="text-gray-600 leading-relaxed">
-                                    {workshopData.description}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Organizer Information */}
-                        <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
-                            <h2 className="text-xl font-semibold text-gray-900 mb-4">Thông tin người tổ chức</h2>
-                            <div className="grid md:grid-cols-2 gap-4">
-                                <div>
-                                    <span className="text-sm text-gray-500">Tên tổ chức</span>
-                                    <p className="font-medium">{organizerName}</p>
-                                </div>
-                                <div>
-                                    <span className="text-sm text-gray-500">Email liên hệ</span>
-                                    <p className="font-medium">{organizerEmail}</p>
                                 </div>
                             </div>
                         </div>

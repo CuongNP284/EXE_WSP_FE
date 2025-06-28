@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Select, message } from 'antd';
+import { Select, DatePicker, message } from 'antd';
 import OrganizerSidebar from '../../components/organizer/OrganizerSidebar';
 import OrganizerHeader from '../../components/organizer/OrganizerHeader';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import ApiService from '../../service/ApiService';
+import dayjs from 'dayjs';
 
 const { Option } = Select;
 
@@ -21,7 +22,9 @@ const CreateWorkshop = () => {
         location: '',
         introVideoUrl: '',
         durationMinutes: '',
-        price: ''
+        price: '',
+        startTime: null,
+        endTime: null
     });
     const [errors, setErrors] = useState({});
 
@@ -68,6 +71,14 @@ const CreateWorkshop = () => {
         setErrors(prev => ({ ...prev, categoryId: value ? '' : 'Danh mục là bắt buộc' }));
     };
 
+    const handleDateTimeChange = (field, date) => {
+        setFormData(prev => ({
+            ...prev,
+            [field]: date ? date.toISOString() : null
+        }));
+        setErrors(prev => ({ ...prev, [field]: date ? '' : `${field === 'startTime' ? 'Thời gian bắt đầu' : 'Thời gian kết thúc'} là bắt buộc` }));
+    };
+
     const validateStep = () => {
         const newErrors = {};
         if (currentStep === 1) {
@@ -80,6 +91,10 @@ const CreateWorkshop = () => {
                 newErrors.durationMinutes = 'Thời lượng phải lớn hơn 0';
             if (formData.price === '' || formData.price < 0)
                 newErrors.price = 'Giá phải là số không âm';
+            if (!formData.startTime) newErrors.startTime = 'Thời gian bắt đầu là bắt buộc';
+            if (!formData.endTime) newErrors.endTime = 'Thời gian kết thúc là bắt buộc';
+            if (formData.startTime && formData.endTime && dayjs(formData.startTime).isAfter(dayjs(formData.endTime)))
+                newErrors.endTime = 'Thời gian kết thúc phải sau thời gian bắt đầu';
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -114,7 +129,9 @@ const CreateWorkshop = () => {
                     ...formData,
                     organizerId,
                     durationMinutes: parseInt(formData.durationMinutes),
-                    price: parseFloat(formData.price)
+                    price: parseFloat(formData.price),
+                    startTime: formData.startTime,
+                    endTime: formData.endTime
                 };
 
                 try {
@@ -133,7 +150,9 @@ const CreateWorkshop = () => {
                                 location: '',
                                 introVideoUrl: '',
                                 durationMinutes: '',
-                                price: ''
+                                price: '',
+                                startTime: null,
+                                endTime: null
                             });
                             setCurrentStep(1);
                         });
@@ -267,6 +286,30 @@ const CreateWorkshop = () => {
                                 className="w-full px-4 py-3 bg-gray-200 rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="Nhập URL video"
                             />
+                        </div>
+
+                        <div>
+                            <label className="block text-white text-sm font-medium mb-2">Thời gian bắt đầu</label>
+                            <DatePicker
+                                showTime
+                                value={formData.startTime ? dayjs(formData.startTime) : null}
+                                onChange={(date) => handleDateTimeChange('startTime', date)}
+                                className="w-full px-4 py-3 bg-gray-200 rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Chọn thời gian bắt đầu"
+                            />
+                            {errors.startTime && <p className="text-red-500 text-sm mt-1">{errors.startTime}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-white text-sm font-medium mb-2">Thời gian kết thúc</label>
+                            <DatePicker
+                                showTime
+                                value={formData.endTime ? dayjs(formData.endTime) : null}
+                                onChange={(date) => handleDateTimeChange('endTime', date)}
+                                className="w-full px-4 py-3 bg-gray-200 rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Chọn thời gian kết thúc"
+                            />
+                            {errors.endTime && <p className="text-red-500 text-sm mt-1">{errors.endTime}</p>}
                         </div>
                     </div>
                 );

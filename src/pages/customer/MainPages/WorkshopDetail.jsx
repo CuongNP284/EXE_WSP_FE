@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Calendar, Clock, MapPin, Users, Eye, Star, Phone, Mail, ArrowLeft } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Eye, Star } from 'lucide-react';
 import CustomerHeader from '../../../components/customer/CustomerHeader';
 import CustomeFooter from '../../../components/customer/CustomeFooter';
 import ApiService from '../../../service/ApiService';
@@ -10,21 +10,13 @@ const WorkshopDetail = () => {
     const { workshopId } = useParams();
     const navigate = useNavigate();
     const [workshop, setWorkshop] = useState(null);
-    const [organizer, setOrganizer] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [selectedDate, setSelectedDate] = useState('2024-03-09');
+    const [selectedDate, setSelectedDate] = useState(null);
     const [reviews, setReviews] = useState([]);
     const [similarWorkshops, setSimilarWorkshops] = useState([]);
     const [newReview, setNewReview] = useState({ rating: 0, comment: '' });
     const [userCanReview, setUserCanReview] = useState(false);
     const userId = localStorage.getItem('userId');
-
-    // Hardcoded available dates (no API provided)
-    const availableDates = [
-        { date: '2024-03-09', time: '14h00 - 16h30', day: 'Thứ 2' },
-        { date: '2024-03-12', time: '14h00 - 16h30', day: 'Thứ 4' },
-        { date: '2024-03-14', time: '14h00 - 16h30', day: 'Thứ 6' },
-    ];
 
     const mapStatusToDisplay = (status) => {
         switch (status) {
@@ -50,23 +42,10 @@ const WorkshopDetail = () => {
                 const mappedWorkshop = {
                     ...workshopData,
                     status: mapStatusToDisplay(workshopData.status),
-                    availableDates,
+                    organizer: `${workshopData.userInfo?.firstName || ''} ${workshopData.userInfo?.lastName || ''}` || 'Unknown Organizer'
                 };
                 setWorkshop(mappedWorkshop);
 
-                const organizerId = workshopData.organizerId;
-                if (organizerId) {
-                    const orgRes = await ApiService.getUserById(organizerId);
-                    const organizerData = orgRes?.data?.data;
-                    if (orgRes && orgRes.status === 200 && organizerData) {
-                        setOrganizer(organizerData);
-                    } else {
-                        message.warning('Không thể tải thông tin người tổ chức.');
-                        setOrganizer(null);
-                    }
-                }
-
-                // Check if user has completed booking and payment
                 const ticketsResponse = await ApiService.getWorkshopTickets();
                 if (ticketsResponse.status === 200 && ticketsResponse.data) {
                     const userTickets = ticketsResponse.data.data.items.filter(
@@ -75,13 +54,11 @@ const WorkshopDetail = () => {
                     setUserCanReview(userTickets.length > 0);
                 }
 
-                // Fetch reviews
                 const reviewsResponse = await ApiService.getAllReviews({ workshopId });
                 if (reviewsResponse.status === 200 && reviewsResponse.data) {
                     setReviews(reviewsResponse.data.data.items || []);
                 }
 
-                // Fetch similar workshops
                 const workshopsResponse = await ApiService.getAllWorkshops();
                 if (workshopsResponse.status === 200 && workshopsResponse.data) {
                     const filteredWorkshops = workshopsResponse.data.data.items.filter(w => w.workshopId !== workshopId);
@@ -149,9 +126,9 @@ const WorkshopDetail = () => {
             const workshopData = {
                 workshopId: workshop.workshopId,
                 title: workshop.title,
-                instructor: organizer ? `${organizer.firstName} ${organizer.lastName}` : 'Unknown Organizer',
-                date: selectedDate,
-                time: availableDates.find(d => d.date === selectedDate)?.time || 'N/A',
+                instructor: workshop.organizer,
+                date: workshop.startTime ? formatDate(workshop.startTime) : 'N/A',
+                time: workshop.startTime ? `${new Date(workshop.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - ${new Date(workshop.endTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}` : 'N/A',
                 location: workshop.location,
                 originalPrice: workshop.price,
                 image: workshop.image || 'https://thienanagency.com/photos/all/khac/workshop-painting.jpg'
@@ -185,9 +162,7 @@ const WorkshopDetail = () => {
 
             <div className="max-w-7xl mx-auto px-4 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Main Content */}
                     <div className="lg:col-span-2">
-                        {/* Workshop Image */}
                         <div className="relative mb-6">
                             <img
                                 src={workshop.image || 'https://thienanagency.com/photos/all/khac/workshop-painting.jpg'}
@@ -201,14 +176,11 @@ const WorkshopDetail = () => {
                             </div>
                         </div>
 
-                        {/* Workshop Title */}
                         <div className="mb-6">
                             <h1 className="text-3xl font-bold text-gray-900 mb-2">{workshop.title}</h1>
                             <p className="text-gray-600 text-lg">{workshop.description}</p>
-                            <p className="text-sm text-gray-500 mt-1">Nhà tổ chức: {organizer ? `${organizer.firstName} ${organizer.lastName}` : 'Unknown Organizer'}</p>
                         </div>
 
-                        {/* Workshop Details */}
                         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                             <h2 className="text-xl font-semibold text-gray-900 mb-4">THÔNG TIN CHI TIẾT</h2>
                             <div className="space-y-4">
@@ -226,32 +198,20 @@ const WorkshopDetail = () => {
                                         <p className="text-gray-600">{workshop.durationMinutes} phút</p>
                                     </div>
                                 </div>
-                                {organizer && (
-                                    <>
-                                        <div className="flex items-start">
-                                            <Phone size={20} className="text-gray-400 mr-3 mt-1" />
-                                            <div>
-                                                <p className="font-medium text-gray-900">Số điện thoại</p>
-                                                <p className="text-gray-600">{organizer.phoneNumber}</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-start">
-                                            <Mail size={20} className="text-gray-400 mr-3 mt-1" />
-                                            <div>
-                                                <p className="font-medium text-gray-900">Email</p>
-                                                <p className="text-gray-600">{organizer.email}</p>
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
+                                <div className="flex items-start">
+                                    <Users size={20} className="text-gray-400 mr-3 mt-1" />
+                                    <div>
+                                        <p className="font-medium text-gray-900">Người tổ chức</p>
+                                        <p className="text-gray-600">{workshop.organizer}</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Intro Video */}
                         {workshop.introVideoUrl && (
                             <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                                 <h2 className="text-xl font-semibold text-gray-900 mb-4">VIDEO GIỚI THIỆU</h2>
-                                <div className="relative" style={{ paddingBottom: '56.25%' /* 16:9 Aspect Ratio */ }}>
+                                <div className="relative" style={{ paddingBottom: '56.25%' }}>
                                     <video
                                         className="absolute top-0 left-0 w-full h-full rounded-lg"
                                         controls
@@ -263,7 +223,6 @@ const WorkshopDetail = () => {
                             </div>
                         )}
 
-                        {/* Description */}
                         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                             <h2 className="text-xl font-semibold text-gray-900 mb-4">MÔ TẢ</h2>
                             <div className="text-gray-600 whitespace-pre-line">
@@ -271,26 +230,22 @@ const WorkshopDetail = () => {
                             </div>
                         </div>
 
-                        {/* Schedule Card */}
                         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                             <h3 className="text-xl font-semibold text-gray-900 mb-4">LỊCH CHI TIẾT</h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {workshop.availableDates.map((schedule, index) => (
-                                    <div key={index} className="text-center">
-                                        <div className="bg-[#091238] text-white rounded-lg p-4">
-                                            <div className="text-sm opacity-80 mb-1">{schedule.day}</div>
-                                            <div className="text-xs opacity-60 mb-2">Tháng 3</div>
-                                            <div className="text-2xl font-bold mb-2">
-                                                {schedule.date.split('-')[2]}
-                                            </div>
-                                            <div className="text-xs opacity-80">{schedule.time}</div>
+                                <div className="text-center">
+                                    <div className="bg-[#091238] text-white rounded-lg p-4">
+                                        <div className="text-sm opacity-80 mb-1">{new Date(workshop.startTime).toLocaleDateString('vi-VN', { weekday: 'long' })}</div>
+                                        <div className="text-xs opacity-60 mb-2">{new Date(workshop.startTime).toLocaleDateString('vi-VN', { month: 'long' })}</div>
+                                        <div className="text-2xl font-bold mb-2">
+                                            {new Date(workshop.startTime).getDate()}
                                         </div>
+                                        <div className="text-xs opacity-80">{new Date(workshop.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - {new Date(workshop.endTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
                                     </div>
-                                ))}
+                                </div>
                             </div>
                         </div>
 
-                        {/* Reviews Section */}
                         <div className="bg-white rounded-lg shadow-sm p-6">
                             <h2 className="text-xl font-semibold text-gray-900 mb-4">
                                 ĐÁNH GIÁ
@@ -318,7 +273,6 @@ const WorkshopDetail = () => {
                                 ))}
                             </div>
 
-                            {/* Review Form */}
                             {ApiService.isAuthenticated() && (
                                 <div className="mt-6 p-4 bg-gray-50 rounded-lg">
                                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Để lại đánh giá của bạn</h3>
@@ -359,13 +313,11 @@ const WorkshopDetail = () => {
                         </div>
                     </div>
 
-                    {/* Sidebar - Fixed pricing card */}
                     <div className="lg:col-span-1">
                         <div className="bg-[#091238] text-white rounded-lg p-6 sticky top-4">
                             <h3 className="text-lg font-semibold mb-4">Thông tin vé</h3>
                             <div className="mb-4">
                                 <h4 className="text-xl font-bold mb-2">{workshop.title}</h4>
-                                <p className="text-sm opacity-80 mb-1">Nhà tổ chức: {organizer ? `${organizer.firstName} ${organizer.lastName}` : 'Unknown Organizer'}</p>
                                 <div className="flex items-center text-sm opacity-80 mb-2">
                                     <MapPin size={14} className="mr-1" />
                                     <span>{workshop.location}</span>
@@ -384,7 +336,6 @@ const WorkshopDetail = () => {
                     </div>
                 </div>
 
-                {/* Similar Workshops Section */}
                 <div className="mt-12">
                     <h2 className="text-2xl font-bold text-gray-900 mb-8">WORKSHOP BẠN CÓ THỂ THÍCH</h2>
                     <p className="text-gray-600 mb-6">Dựa trên thể loại workshop bạn đang xem</p>

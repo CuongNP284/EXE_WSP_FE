@@ -23,14 +23,37 @@ const LoginUser = () => {
       if (response.status === 200 && response.data && response.data.accessToken) {
         const userInfoResponse = await ApiService.getLoggedInUserInfo();
         if (userInfoResponse.status === 200 && userInfoResponse.data) {
+          const roleId = userInfoResponse.data.role;
+          const roleName = ApiService.mapRoleIdToName(roleId);
+          localStorage.setItem('userRole', roleName);
           localStorage.setItem('userId', userInfoResponse.data.id);
+
+          await Swal.fire({
+            title: 'Thành công',
+            text: 'Đăng nhập thành công, xin vui lòng chờ trong giây lát',
+            icon: 'success'
+          });
+
+          switch (roleName) {
+            case 'ADMIN':
+              navigate('/admindashboard');
+              break;
+            case 'ORGANIZER':
+              navigate('/organizerdashboard');
+              break;
+            case 'USER':
+              navigate('/');
+              break;
+            default:
+              navigate('/');
+          }
         } else {
-          throw new Error('Failed to fetch user info after login');
+          throw new Error('Không thể lấy thông tin người dùng sau khi đăng nhập');
         }
 
         await Swal.fire({
           title: 'Success',
-          text: 'Login successful!',
+          text: 'Đăng nhập thành công, xin vui lòng chờ trong giây lát',
           icon: 'success'
         });
 
@@ -49,11 +72,11 @@ const LoginUser = () => {
             navigate('/');
         }
       } else {
-        Swal.fire('Error', response.message || 'Login failed', 'error');
+        Swal.fire('Error', response.message || 'Đăng nhập không thành công', 'error');
       }
     } catch (error) {
       console.error('Login error:', error);
-      Swal.fire('Error', error.message || 'Unable to log in user', 'error');
+      Swal.fire('Error', error.message || 'Không thể đăng nhập được, xin vui lòng thử lại', 'error');
     }
   };
 

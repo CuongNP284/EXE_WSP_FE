@@ -24,7 +24,7 @@ export default class ApiService {
             console.error("Registration error:", error);
             return {
                 status: error.response?.status || 500,
-                message: error.response?.data?.message || "Registration failed"
+                message: error.response?.data?.message || "Đăng ký không thành công, có thể do email đã được sử dụng hoặc thông tin không hợp lệ"
             };
         }
     }
@@ -41,7 +41,12 @@ export default class ApiService {
                 // Fetch the actual user role and id
                 const userInfoResponse = await this.getLoggedInUserInfo();
                 if (userInfoResponse.status === 200 && userInfoResponse.data) {
-                    localStorage.setItem("userRole", userInfoResponse.data.role || "USER");
+                    // Đảm bảo role là string: 'USER', 'ADMIN', 'ORGANIZER'
+                    const roleId = response.data.data.role;
+                    const roleName = this.mapRoleIdToName(roleId);
+                    localStorage.setItem("userRole", roleName); // Lưu đúng string
+                    console.log("User role set to:", roleName); // Debug log
+
                     localStorage.setItem("userId", userInfoResponse.data.id); // Ensure userId is stored
                 } else {
                     console.error("Failed to fetch user role and id, defaulting to USER");
@@ -856,32 +861,24 @@ export default class ApiService {
      * @param {Object} categoryData - Object containing categoryId
      * @returns {Promise<Object>} Response object with status and data/message
      */
-    static async handleFavouriteCategory(categoryData) {
+    static async handleFavouriteCategory(data) {
         try {
-            if (!categoryData.categoryId) {
-                throw new Error("Category ID is required");
-            }
-
-            console.log("Handling favourite category with data:", categoryData);
-
             const response = await axios.post(
                 `${this.BASE_URL}/api/v1/Category/favourite`,
-                categoryData,
+                data,
                 { headers: this.getHeader() }
             );
-
-            console.log("Handle favourite category response:", response.data);
 
             return {
                 status: 200,
                 data: response.data,
-                message: "Favourite category handled successfully"
+                message: "Thành công"
             };
         } catch (error) {
             console.error("Error handling favourite category:", error);
             return {
                 status: error.response?.status || 400,
-                message: error.response?.data?.message || "Failed to handle favourite category"
+                message: error.response?.data?.message || "Lỗi khi lưu category yêu thích"
             };
         }
     }
@@ -1708,6 +1705,81 @@ export default class ApiService {
             return {
                 status: error.response?.status || 400,
                 message: error.response?.data?.message || "Failed to fetch recommended workshops"
+            };
+        }
+    }
+
+    /**
+     * Create a new workshop schedule
+     * @param {Object} scheduleData - The schedule data containing workshopId, startTime, and endTime
+     * @returns {Promise<Object>} Response object with status and data/message
+     */
+    static async createWorkshopSchedule(scheduleData) {
+        try {
+            if (!scheduleData.workshopId || !scheduleData.startTime || !scheduleData.endTime) {
+                throw new Error("workshopId, startTime, and endTime are required");
+            }
+
+            console.log("Creating new workshop schedule with data:", scheduleData);
+
+            const response = await axios.post(
+                `${this.BASE_URL}/api/v1/Workshop/schedule`,
+                scheduleData,
+                { headers: this.getHeader() }
+            );
+
+            console.log("Create workshop schedule response:", response.data);
+
+            return {
+                status: 200,
+                data: response.data,
+                message: "Workshop schedule created successfully"
+            };
+        } catch (error) {
+            console.error("Error creating workshop schedule:", error);
+            return {
+                status: error.response?.status || 400,
+                message: error.response?.data?.message || error.message || "Failed to create workshop schedule"
+            };
+        }
+    }
+
+    /**
+     * Update a workshop schedule
+     * @param {string} workshopId - The ID of the workshop to update schedule
+     * @param {Object} scheduleData - The updated schedule data containing startTime and endTime
+     * @returns {Promise<Object>} Response object with status and data/message
+     */
+    static async updateWorkshopSchedule(workshopId, scheduleData) {
+        try {
+            if (!workshopId) {
+                throw new Error("Workshop ID is required for update");
+            }
+            if (!scheduleData.startTime || !scheduleData.endTime) {
+                throw new Error("startTime and endTime are required");
+            }
+
+            console.log("Updating workshop schedule with id:", workshopId);
+            console.log("Update data:", scheduleData);
+
+            const response = await axios.put(
+                `${this.BASE_URL}/api/v1/Workshop/schedule/${workshopId}`,
+                scheduleData,
+                { headers: this.getHeader() }
+            );
+
+            console.log("Update workshop schedule response:", response.data);
+
+            return {
+                status: 200,
+                data: response.data,
+                message: "Workshop schedule updated successfully"
+            };
+        } catch (error) {
+            console.error("Error updating workshop schedule:", error);
+            return {
+                status: error.response?.status || 400,
+                message: error.response?.data?.message || error.message || "Failed to update workshop schedule"
             };
         }
     }

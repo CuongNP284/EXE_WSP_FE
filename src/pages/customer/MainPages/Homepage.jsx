@@ -18,7 +18,7 @@ const Homepage = () => {
   const carouselImages = [
     {
       id: 1,
-      image: "https://tastytablecatering.com/wp-content/uploads/2020/05/summer-bbq-party-ideas.jpg",
+      image: "https://d21klxpge3tttg.cloudfront.net/wp-content/uploads/2021/06/BACKYARD-BBQ.jpg",
       title: "THAM GIA NGAY",
       subtitle: "TỪ MÓN NƯỚNG ĐẬM VỊ ĐẾN TRÁNG MIỆNG NGỌT NGÀO",
       buttonText: "Khám phá workshop về ẩm thực"
@@ -199,59 +199,6 @@ const Homepage = () => {
         </div>
       </section>
 
-      <section className="px-4 mb-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-left mb-8">
-            <h2 className="text-3xl font-bold text-black mb-4">Workshop Nổi Bật</h2>
-          </div>
-
-          {filteredWorkshops.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-600">Không có workshop nào trong danh mục này.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {filteredWorkshops.map((workshop) => (
-                <div key={workshop.workshopId} className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
-                  <div className="relative">
-                    <img
-                      src={workshop.image || 'https://thienanagency.com/photos/all/khac/workshop-painting.jpg'}
-                      alt={workshop.title}
-                      className="w-full h-48 object-cover"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
-                      {workshop.title}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                      {workshop.description}
-                    </p>
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Calendar size={16} className="mr-2 text-gray-400" />
-                        <span>{new Date(workshop.createdAt).toLocaleDateString('vi-VN')}</span>
-                      </div>                    
-                    </div>
-                    <div className="mb-4">
-                      <span className="text-lg font-bold text-[#091238]">{workshop.price.toLocaleString('vi-VN')} VNĐ</span>
-                    </div>
-                    <Link
-                      to={`/workshopdetail/${workshop.workshopId}`}
-                      className="w-full bg-[#091238] hover:bg-opacity-90 text-white py-3 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 no-underline"
-                    >
-                      <Eye size={16} />
-                      Xem chi tiết
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )
-          }
-        </div>
-      </section>
-
       <section className="py-8 px-4 bg-amber-100">
         <div className="max-w-7xl mx-auto">
           <div className="text-left mb-8">
@@ -353,6 +300,58 @@ const Homepage = () => {
                         <MapPin size={16} className="mr-2 text-gray-400" />
                         <span className="line-clamp-1">{workshop.location}</span>
                       </div>
+                    </div>
+                    <div className="mb-4">
+                      <span className="text-lg font-bold text-[#091238]">{workshop.price.toLocaleString('vi-VN')} VNĐ</span>
+                    </div>
+                    <Link
+                      to={`/workshopdetail/${workshop.workshopId}`}
+                      className="w-full bg-[#091238] hover:bg-opacity-90 text-white py-3 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 no-underline"
+                    >
+                      <Eye size={16} />
+                      Xem chi tiết
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="px-4 mb-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-left mb-8">
+            <h2 className="text-3xl font-bold text-black mb-4">Workshop Nổi Bật</h2>
+          </div>
+
+          {filteredWorkshops.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">Không có workshop nào trong danh mục này.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {filteredWorkshops.map((workshop) => (
+                <div key={workshop.workshopId} className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
+                  <div className="relative">
+                    <img
+                      src={workshop.image || 'https://thienanagency.com/photos/all/khac/workshop-painting.jpg'}
+                      alt={workshop.title}
+                      className="w-full h-48 object-cover"
+                    />
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
+                      {workshop.title}
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                      {workshop.description}
+                    </p>
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Calendar size={16} className="mr-2 text-gray-400" />
+                        <span>{new Date(workshop.createdAt).toLocaleDateString('vi-VN')}</span>
+                      </div>                    
                     </div>
                     <div className="mb-4">
                       <span className="text-lg font-bold text-[#091238]">{workshop.price.toLocaleString('vi-VN')} VNĐ</span>
